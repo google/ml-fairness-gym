@@ -1,0 +1,14 @@
+absl-py
+attrs
+gym
+matplotlib
+monty
+more_itertools
+networkx
+numpy
+pandas
+seaborn
+simplejson
+sklearn
+statsmodels
+tqdm
