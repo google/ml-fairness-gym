@@ -127,7 +127,7 @@ class CollegeAdmissionsEnv(core.FairnessEnv):
     1. The environment generates N applicants each round with ground truth
       eligibility to be admitted. The applicants belong to two groups and have
       different Gaussian distributions and base rates of eligibility.
-    2. The learner/jury publishes its classifier [One dimensional case], a
+    2. The learner/jury publishes its classifier [one dimensional case], a
       threshold in [0, 1], indicating threshold of test scores and is group
       agnostic. The agent, if following an epsilon greedy policy also publishes
       its epsilon probability, which by default is 0.
