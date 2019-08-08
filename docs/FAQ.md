@@ -48,8 +48,8 @@ real data, not to replace them.*
 ## How is working with ML-fairness-gym different than working with traditional ML data sets?
 
 The environments in ML-fairness-gym are dynamic. That means that decisions made
-by your algorithm at step $$t$$ affect the next decision it will be asked to
-make at time $$t+1$$.
+by your algorithm at step t affect the next decision it will be asked to
+make at time t+1.
 
 This has a few implications: Data collection is part of the agent’s job and is
 not limited by how the dataset creators happened to collect their data. You can
@@ -154,9 +154,10 @@ To create a new environment, start with the
 provides an outline to a FairnessEnv subclass, and describes what to fill in
 with TODO comments. For examples of already implemented environments, see the
 [environments](../environments) folder for:
-[college_admission](../environments/college_admission.py)
-[lending](../environments/lending.py)
-[attention_allocation](../environments/attention_allocation.py).
+
+*   [college_admission](../environments/college_admission.py)
+*   [lending](../environments/lending.py)
+*   [attention_allocation](../environments/attention_allocation.py).
 
 If you would like to add your developed environment back to the ML-fairness-gym
 repo, please see the [contributing doc](../CONTRIBUTING.md).

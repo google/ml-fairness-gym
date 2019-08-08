@@ -44,20 +44,20 @@ by the dynamic_rate * number of units allocated.
 instantiation of the probability_matching_agents.MLEProbabilityMatchingAgent.
 
 This agent uses MLE to estimate the underlying incident rate of each location,
-$$\hat{r}_k$$, with a censored Poisson function as the likelihood function. At
-each timestep, the agent allocated units by drawing from a Multinomial(N, $$p$$)
-distribution where $$p = (p_1, ..., p_k)$$ is a vector of allocation
-probabilities for each location. With probability $$\epsilon$$, it sets $$p_k$$
-to be uniformly $$1/k$$ for all $$k$$, and with probability it sets $$p_k$$ to
-be proportional to $$\hat{r}_k$$.
+r<sub>k</sub>, with a censored Poisson function as the likelihood function. At
+each timestep, the agent allocated units by drawing from a Multinomial(N, p)
+distribution where p = (p<sub>1</sub>, ..., p<sub>k</sub>) is a vector of allocation
+probabilities for each location. With probability epsilon, it sets p<sub>k</sub>
+to be uniformly 1/k for all k and with probability it sets p<sub>k</sub> to
+be proportional to r<sub>k</sub>.
 
 **Uniform Agent**: The uniform agent described in the paper is an instantiation
 of the test_util.DummyAgent.
 
 This agent samples randomly from the action space. Since the action space for
 the attention allocation environment is a Multinomial space, it acts by drawing
-from a Multinomial(N, $$p$$) where $$p$$ is a vector with values $$1/k$$ and
-length $$k$$.
+from a Multinomial(N, p) where p is a vector with values 1/k and
+length k.
 
 ### Metrics
 
