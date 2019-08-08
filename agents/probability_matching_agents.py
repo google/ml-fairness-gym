@@ -357,12 +357,11 @@ class MLEProbabilityMatchingAgentParams(ProbabilityMatchingAgentParams):
 class MLEProbabilityMatchingAgent(ProbabilityMatchingAgent):
   """Probability matching agent that estimates poisson parameter for each bin.
 
-  underying features and allocates with probability in proportion to the
-  parameters.
+  The agent then allocates with probability in proportion to the estimated
+  poisson parameters.
 
-  Assumes specific likelihood model defined by _TruncatedPoisson() as the
-  likelihood
-  model for the features.
+  Assumes specific likelihood model defined by _CensoredPoisson() as the
+  likelihood model for the features.
   """
 
   def __init__(self,

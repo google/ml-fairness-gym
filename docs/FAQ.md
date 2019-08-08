@@ -125,9 +125,9 @@ look for in real-world scenarios. We caution against taking the application that
 is used to motivate each environment (e.g., lending) too seriously - since these
 are small-scale abstracted simulations, they make simplifications and
 assumptions about reality. While the results from ML-fairness-gym can help
-provide intution about agents in environments, and expose certain patterns of
+provide intuition about agents in environments, and expose certain patterns of
 performance, they may differ from results obtained in the real world. For this
-reason we recommend the gym as a companion to evaulation with real world data
+reason we recommend the gym as a companion to evaluation with real world data
 and field tests.
 
 ## What are best practices for stratifying performance metrics by group identifiers?
