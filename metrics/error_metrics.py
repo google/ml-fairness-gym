@@ -22,9 +22,11 @@ from __future__ import print_function
 
 import collections
 from typing import Any, Callable, Dict, Optional, Text, List, Union
+from absl import logging
 import attr
 import core
 import params
+import gin
 import numpy as np
 from six.moves import zip
 
@@ -62,7 +64,22 @@ class ConfusionMatrix(object):
   def to_jsonable(self):
     return {'___CONFUSION_MATRIX___': attr.asdict(self)}
 
+  @property
+  def recall(self):
+    if (self.tp + self.fn) == 0:
+      logging.warning('Measuring recall with 0 denominator.')
+      return 0
+    return self.tp / (self.tp + self.fn)
 
+  @property
+  def precision(self):
+    if (self.tp + self.fp) == 0:
+      logging.warning('Measuring precision with 0 denominator.')
+      return 0
+    return self.tp / (self.tp + self.fp)
+
+
+@gin.configurable
 class AccuracyMetric(core.Metric):
   """Metric that returns a report of an agent's classification accuracy."""
 
@@ -201,6 +218,7 @@ class ConfusionMetric(core.Metric):
     return confusion
 
 
+@gin.configurable
 class CostedConfusionMetric(ConfusionMetric):
   """Metric that returns a group-stratified cost."""
 
@@ -249,6 +267,7 @@ class CostedConfusionMetric(ConfusionMetric):
     }
 
 
+@gin.configurable
 class RecallMetric(ConfusionMetric):
   """Computes recall."""
 
@@ -262,12 +281,10 @@ class RecallMetric(ConfusionMetric):
       Stratified recall.
     """
     result = super(RecallMetric, self).measure(env)
-    return {
-        stratum: confusion.tp / (confusion.tp + confusion.fn)
-        for stratum, confusion in result.items()
-    }
+    return {stratum: confusion.recall for stratum, confusion in result.items()}
 
 
+@gin.configurable
 class PrecisionMetric(ConfusionMetric):
   """Computes precision."""
 
@@ -282,6 +299,5 @@ class PrecisionMetric(ConfusionMetric):
     """
     result = super(PrecisionMetric, self).measure(env)
     return {
-        stratum: confusion.tp / (confusion.tp + confusion.fp)
-        for stratum, confusion in result.items()
+        stratum: confusion.precision for stratum, confusion in result.items()
     }

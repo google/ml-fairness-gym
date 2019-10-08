@@ -20,10 +20,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import gin
 import tqdm
 
 
-def run_simulation(env, agent, metrics, num_steps, seed=100):
+@gin.configurable
+def run_simulation(env, agent, metrics, num_steps, seed=100, agent_seed=50):
   """Perform a simple simulation and return a measurement.
 
   Args:
@@ -34,11 +36,13 @@ def run_simulation(env, agent, metrics, num_steps, seed=100):
     num_steps: An integer indicating the number of steps to simulate in each
       episode.
     seed: An integer indicating a random seed.
+    agent_seed: An integer indicating a random seed for the agent.
 
   Returns:
     A list of measurements if multiple metrics else a single measurement for a
     single metric.
   """
+  agent.seed(agent_seed)
   env.seed(seed)
   observation = env.reset()
   done = False
@@ -60,7 +64,13 @@ def run_simulation(env, agent, metrics, num_steps, seed=100):
     return metrics.measure(env)
 
 
-def run_stackelberg_simulation(env, agent, metrics, num_steps, seed=100):
+@gin.configurable
+def run_stackelberg_simulation(env,
+                               agent,
+                               metrics,
+                               num_steps,
+                               seed=100,
+                               agent_seed=100):
   """Performs a Stackelberg simulation.
 
 
@@ -83,11 +93,13 @@ def run_stackelberg_simulation(env, agent, metrics, num_steps, seed=100):
       or a single `core.Metric` instance.
     num_steps: An integer indicating the numnber of steps to simulate.
     seed: An integer indicating a random seed.
+    agent_seed: An integer indicating a random seed for the agent.
 
   Returns:
     A list of measurements if multiple metrics else a single measurement.
   """
   env.seed(seed)
+  agent.seed(agent_seed)
   _ = env.reset()
   action = agent.initial_action()
   done = False

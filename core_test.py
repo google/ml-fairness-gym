@@ -26,6 +26,7 @@ from absl.testing import parameterized
 import attr
 import core
 import test_util
+from agents import random_agents
 from environments import attention_allocation
 import gym
 import numpy as np
@@ -63,7 +64,8 @@ class CoreApiTest(parameterized.TestCase):
 
   def test_metric_multiple(self):
     env = attention_allocation.LocationAllocationEnv()
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
 
     env.seed(100)
     observation = env.reset()
@@ -82,15 +84,18 @@ class CoreApiTest(parameterized.TestCase):
 
   def test_episode_done_raises_error(self):
     env = test_util.DummyEnv()
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
     obs = env.reset()
     with self.assertRaises(core.EpisodeDoneError):
       agent.act(obs, done=True)
 
   def test_metric_realigns_history(self):
     env = test_util.DummyEnv()
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
     env.set_scalar_reward(agent.reward_fn)
+
     def realign_fn(history):
       return [(1, action) for _, action in history]
 
@@ -100,15 +105,13 @@ class CoreApiTest(parameterized.TestCase):
     self.assertCountEqual([1] * 10, [state for state, _ in history])
 
   def test_state_deepcopy_maintains_equality(self):
-    state = CoreTestState(
-        x=0.,
-        params=None,
-        rng=np.random.RandomState())
+    state = CoreTestState(x=0., params=None, rng=np.random.RandomState())
     copied_state = copy.deepcopy(state)
     self.assertIsInstance(copied_state, CoreTestState)
     self.assertEqual(state, copied_state)
 
   def test_state_with_nested_numpy_serializes(self):
+
     @attr.s
     class _TestState(core.State):
       x = attr.ib()
@@ -130,6 +133,7 @@ class CoreApiTest(parameterized.TestCase):
     self.assertEqual(state, before)
 
   def test_json_encode_function(self):
+
     def my_function(x):
       return x
 

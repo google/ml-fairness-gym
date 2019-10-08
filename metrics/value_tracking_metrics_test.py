@@ -62,7 +62,7 @@ def _setup_test_simulation(dim=1, calc_mean=False, modifier_fn=_modifier_fn):
 class AggregatingMetricsTest(absltest.TestCase):
   """Tests for aggregating metrics.
 
-  These tests use the DeterministicDummyAgent, which alternates between 1 and 0
+  These tests use the DeterministicDummyEnv, which alternates between 1 and 0
   or a list of 0's and 1's with length given by dim.
   To values for tests are calculated for each group as:
   sum/mean over the values passed by the modifier_fn. The modifier_fn receives

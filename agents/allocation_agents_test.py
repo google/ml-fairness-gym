@@ -24,8 +24,9 @@ from absl.testing import absltest
 import core
 import rewards
 import test_util
-from agents import probability_matching_agents
+from agents import allocation_agents
 from environments import attention_allocation
+import gym
 import numpy as np
 from six.moves import range
 
@@ -35,10 +36,9 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
   def test_update_counts(self):
     """Check that counts are updated correctly given an observation."""
     env = attention_allocation.LocationAllocationEnv()
-    agent_params = probability_matching_agents.NaiveProbabilityMatchingAgentParams(
-    )
+    agent_params = allocation_agents.NaiveProbabilityMatchingAgentParams()
     agent_params.decay_prob = 0
-    agent = probability_matching_agents.NaiveProbabilityMatchingAgent(
+    agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=rewards.VectorSumReward('incidents_seen'),
@@ -51,16 +51,14 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
   def test__allocate_by_counts(self):
     """Check allocation proportions match probabilities from counts."""
     env = attention_allocation.LocationAllocationEnv()
-    agent = probability_matching_agents.NaiveProbabilityMatchingAgent(
+    agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=rewards.VectorSumReward('incidents_seen'))
     counts = [3, 6, 8]
     n_resource = 20
     n_samples = 100
-    samples = [
-        agent._allocate_by_beliefs(n_resource, counts) for _ in range(n_samples)
-    ]
+    samples = [agent._allocate(n_resource, counts) for _ in range(n_samples)]
     counts_normalized = [(count / float(np.sum(counts))) for count in counts]
     samples_normalized = [
         (count / float(np.sum(samples))) for count in np.sum(samples, axis=0)
@@ -71,16 +69,14 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
   def test_allocate_by_counts_zero(self):
     """Check allocations are even when counts are zero."""
     env = attention_allocation.LocationAllocationEnv()
-    agent = probability_matching_agents.NaiveProbabilityMatchingAgent(
+    agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=rewards.VectorSumReward('incidents_seen'))
     counts = [0, 0, 0]
     n_resource = 15
     n_samples = 100
-    samples = [
-        agent._allocate_by_beliefs(n_resource, counts) for _ in range(n_samples)
-    ]
+    samples = [agent._allocate(n_resource, counts) for _ in range(n_samples)]
     mean_samples = np.sum(samples, axis=0) / float(n_samples)
     expected_mean = n_resource / float(len(counts))
     std_dev = np.std(samples)
@@ -89,9 +85,9 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
     ]
     self.assertTrue(np.all(means_close))
 
-  def test_can_interact_with_policing_env(self):
+  def test_can_interact_with_attention_env(self):
     env = attention_allocation.LocationAllocationEnv()
-    agent = probability_matching_agents.NaiveProbabilityMatchingAgent(
+    agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=rewards.VectorSumReward('incidents_seen'))
@@ -103,18 +99,18 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
         'incidents_seen': np.array([0, 1]),
         'incidents_reported': np.array([3, 1])
     }
-    features = probability_matching_agents._get_added_vector_features(
+    features = allocation_agents._get_added_vector_features(
         observation, action_space_len)
     expected = [3.0, 2.0]
     self.assertSequenceAlmostEqual(features.tolist(), expected)
-    features = probability_matching_agents._get_added_vector_features(
+    features = allocation_agents._get_added_vector_features(
         observation, action_space_len, keys=['incidents_reported'])
     expected = [3.0, 1.0]
     self.assertSequenceAlmostEqual(features.tolist(), expected)
 
   def test_episode_done_raises_error(self):
     env = attention_allocation.LocationAllocationEnv()
-    agent = probability_matching_agents.NaiveProbabilityMatchingAgent(
+    agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=rewards.VectorSumReward('incidents_seen'))
@@ -125,22 +121,30 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
 
 class MLEProbabilityMatchingAgentTest(absltest.TestCase):
 
+  def test_can_interact_with_attention_env(self):
+    env = attention_allocation.LocationAllocationEnv()
+    agent = allocation_agents.MLEProbabilityMatchingAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.VectorSumReward('incidents_seen'),
+        params=None)
+    test_util.run_test_simulation(env=env, agent=agent)
+
   def test_MLE_rate_estimation(self):
     env_params = attention_allocation.Params()
     env_params.prior_incident_counts = (500, 500)
     env_params.n_attention_units = 5
 
     # pylint: disable=g-long-lambda
-    agent_params = probability_matching_agents.MLEProbabilityMatchingAgentParams(
-    )
+    agent_params = allocation_agents.MLEProbabilityMatchingAgentParams()
 
-    agent_params.feature_selection_fn = lambda obs: probability_matching_agents._get_added_vector_features(
+    agent_params.feature_selection_fn = lambda obs: allocation_agents._get_added_vector_features(
         obs, env_params.n_locations, keys=['incidents_seen'])
     agent_params.interval = 200
     agent_params.epsilon = 0
 
     env = attention_allocation.LocationAllocationEnv(env_params)
-    agent = probability_matching_agents.MLEProbabilityMatchingAgent(
+    agent = allocation_agents.MLEProbabilityMatchingAgent(
         action_space=env.action_space,
         reward_fn=lambda x: None,
         observation_space=env.observation_space,
@@ -160,6 +164,67 @@ class MLEProbabilityMatchingAgentTest(absltest.TestCase):
             np.isclose(
                 list(agent.beliefs), list(env_params.incident_rates),
                 atol=0.5)))
+
+
+class MLEGreedyAgentTest(absltest.TestCase):
+
+  def test_can_interact_with_attention_env(self):
+    env = attention_allocation.LocationAllocationEnv()
+    agent = allocation_agents.MLEGreedyAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.VectorSumReward('incidents_seen'))
+    test_util.run_test_simulation(env=env, agent=agent)
+
+  def test_allocate_beliefs_fair_unsatisfiable(self):
+    env_params = attention_allocation.Params(
+        n_locations=4,
+        prior_incident_counts=(10, 10, 10, 10),
+        n_attention_units=5,
+        incident_rates=[0, 0, 0, 0])
+    env = attention_allocation.LocationAllocationEnv(params=env_params)
+    agent_params = allocation_agents.MLEGreedyAgentParams(
+        epsilon=0.0, alpha=0.25)
+    agent = allocation_agents.MLEGreedyAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.VectorSumReward('incidents_seen'),
+        params=agent_params)
+    with self.assertRaises(gym.error.InvalidAction):
+      agent._allocate(5, [5, 2, 1, 1])
+
+  def test_allocate_beliefs_fair(self):
+    env_params = attention_allocation.Params(
+        n_locations=4,
+        prior_incident_counts=(10, 10, 10, 10),
+        n_attention_units=6,
+        incident_rates=[0, 0, 0, 0])
+    env = attention_allocation.LocationAllocationEnv(params=env_params)
+    agent_params = allocation_agents.MLEGreedyAgentParams(
+        epsilon=0.0, alpha=0.25)
+    agent = allocation_agents.MLEGreedyAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.VectorSumReward('incidents_seen'),
+        params=agent_params)
+    allocation = agent._allocate(6, [5, 2, 1, 1])
+    self.assertTrue(np.all(np.equal(allocation, [3, 1, 1, 1])))
+
+  def test_allocate_beliefs_greedy(self):
+    env_params = attention_allocation.Params(
+        n_locations=4,
+        prior_incident_counts=(10, 10, 10, 10),
+        n_attention_units=5,
+        incident_rates=[0, 0, 0, 0])
+    env = attention_allocation.LocationAllocationEnv(params=env_params)
+    agent_params = allocation_agents.MLEGreedyAgentParams(epsilon=0.0)
+    agent = allocation_agents.MLEGreedyAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.VectorSumReward('incidents_seen'),
+        params=agent_params)
+    allocation = agent._allocate(5, [5, 2, 1, 1])
+    self.assertTrue(np.all(np.equal(allocation, [4, 1, 0, 0])))
 
 
 if __name__ == '__main__':

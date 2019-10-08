@@ -21,6 +21,7 @@ from __future__ import print_function
 
 from absl.testing import absltest
 import test_util
+from agents import random_agents
 from environments import attention_allocation
 from metrics import distribution_comparison_metrics
 import numpy as np
@@ -38,7 +39,8 @@ class DistributionComparisonMetricsTest(absltest.TestCase):
     env.seed(100)
     env.action_space.seed(100)
     env.observation_space.seed(100)
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
 
     observation = env.reset()
     done = False
@@ -52,9 +54,10 @@ class DistributionComparisonMetricsTest(absltest.TestCase):
 
     expected_state_dist = env.state.params.incident_rates / np.sum(
         env.state.params.incident_rates)
-    # Expected action distribution is uniform because DummyAgent is random.
+    # Expected action distribution is uniform because RandomAgent is random.
     expected_action_dist = [0.5, 0.5]
-    expected_distance = np.linalg.norm(expected_state_dist-expected_action_dist)
+    expected_distance = np.linalg.norm(expected_state_dist -
+                                       expected_action_dist)
 
     self.assertTrue(
         np.all(np.isclose(state_dist, expected_state_dist, atol=0.05)))
@@ -68,7 +71,8 @@ class DistributionComparisonMetricsTest(absltest.TestCase):
     env.seed(100)
     env.action_space.seed(100)
     env.observation_space.seed(100)
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
 
     observation = env.reset()
     done = False

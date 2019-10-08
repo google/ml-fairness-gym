@@ -105,7 +105,9 @@ class ThresholdAgentTest(absltest.TestCase):
   def test_agent_trains(self):
     env = test_util.DummyEnv()
     params = classifier_agents.ScoringAgentParams(
-        default_action_fn=env.action_space.sample, feature_keys=['x'])
+        burnin=200,
+        default_action_fn=env.action_space.sample,
+        feature_keys=['x'])
 
     agent = classifier_agents.ThresholdAgent(
         action_space=env.action_space,
@@ -136,8 +138,8 @@ class ThresholdAgentTest(absltest.TestCase):
     # Assert actions are sorted - i.e., 0s followed by 1s.
     self.assertSequenceEqual(actions, sorted(actions))
 
-    self.assertGreater(agent._global_threshold, 0)
-    self.assertFalse(agent._group_specific_thresholds)
+    self.assertGreater(agent.global_threshold, 0)
+    self.assertFalse(agent.group_specific_thresholds)
 
   def test_agent_can_learn_different_thresholds(self):
 
@@ -193,7 +195,7 @@ class ThresholdAgentTest(absltest.TestCase):
     # The two groups are classified with different policies so they are not
     # exactly equal.
     self.assertNotEqual(actions[0], actions[1])
-    self.assertLen(agent._group_specific_thresholds, 2)
+    self.assertLen(agent.group_specific_thresholds, 2)
 
   def test_one_hot_conversion(self):
     observation_space = gym.spaces.Dict({'x': multinomial.Multinomial(10, 1)})
@@ -220,6 +222,7 @@ class ThresholdAgentTest(absltest.TestCase):
         default_action_fn=lambda: 0,
         feature_keys=['x'],
         convert_one_hot_to_integer=True,
+        burnin=999,
         threshold_policy=threshold_policies.ThresholdPolicy.SINGLE_THRESHOLD)
 
     agent = classifier_agents.ThresholdAgent(
@@ -229,15 +232,23 @@ class ThresholdAgentTest(absltest.TestCase):
 
     observation_space.seed(100)
     # Train a boundary at 3 using 1-hot vectors.
+    observation = observation_space.sample()
+    agent._act_impl(observation, reward=None, done=False)
     for _ in range(1000):
+      last_observation = observation
       observation = observation_space.sample()
-      agent._act_impl(observation, reward=int(np.argmax(observation['x']) > 3),
-                      done=False)
+      agent._act_impl(
+          observation,
+          reward=int(np.argmax(last_observation['x']) >= 3),
+          done=False)
+      if agent._training_corpus.examples:
+        assert int(agent._training_corpus.examples[-1].features[0] >= 3
+                  ) == agent._training_corpus.examples[-1].label
 
     agent.frozen = True
 
-    self.assertTrue(agent.act({'x': _one_hot(6)}, done=False))
-    self.assertFalse(agent.act({'x': _one_hot(0)}, done=False))
+    self.assertTrue(agent.act({'x': _one_hot(3)}, done=False))
+    self.assertFalse(agent.act({'x': _one_hot(2)}, done=False))
 
   def test_frozen_classifier_never_trains(self):
     env = test_util.DummyEnv()
@@ -250,13 +261,43 @@ class ThresholdAgentTest(absltest.TestCase):
         reward_fn=rewards.BinarizedScalarDeltaReward('x'),
         params=params,
         frozen=True)
-    # Initialize _global_threshold with a distinctive value.
-    agent._global_threshold = 0.123
+    # Initialize global_threshold with a distinctive value.
+    agent.global_threshold = 0.123
 
-    # Run for some number of steps, _global_threshold should not change.
+    # Run for some number of steps, global_threshold should not change.
     for _ in range(10):
       agent.act(env.observation_space.sample(), False)
-    self.assertEqual(agent._global_threshold, 0.123)
+    self.assertEqual(agent.global_threshold, 0.123)
+
+  def test_threshold_history_is_recorded(self):
+    observation_space = gym.spaces.Dict({
+        'x': gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
+        'group': gym.spaces.MultiDiscrete([1])
+    })
+    observation_space.seed(100)
+
+    params = classifier_agents.ScoringAgentParams(
+        default_action_fn=lambda: 0,
+        feature_keys=['x'],
+        group_key='group',
+        burnin=0,
+        threshold_policy=threshold_policies.ThresholdPolicy.EQUALIZE_OPPORTUNITY
+    )
+
+    agent = classifier_agents.ThresholdAgent(
+        observation_space=observation_space,
+        reward_fn=rewards.BinarizedScalarDeltaReward('x'),
+        params=params)
+
+    for _ in range(10):
+      agent.act(observation_space.sample(), False)
+
+    self.assertLen(agent.global_threshold_history, 10)
+    self.assertTrue(agent.group_specific_threshold_history)
+    for _, history in agent.group_specific_threshold_history.items():
+      # Takes 2 extra steps (one to observe features and one to observe label)
+      # before any learned group-specific threshold is available.
+      self.assertLen(history, 8)
 
   def test_freeze_after_burnin(self):
     env = test_util.DummyEnv()
@@ -273,12 +314,12 @@ class ThresholdAgentTest(absltest.TestCase):
         reward_fn=rewards.BinarizedScalarDeltaReward('x'),
         params=params)
 
-    for _ in range(burnin+1):
+    for _ in range(burnin + 1):
       self.assertFalse(agent.frozen)
       _ = agent.act(env.observation_space.sample(), False)
 
     self.assertTrue(agent.frozen)
-    self.assertTrue(agent._global_threshold)  # Agent has learned something.
+    self.assertTrue(agent.global_threshold)  # Agent has learned something.
 
   def test_skip_retraining_fn(self):
     env = test_util.DummyEnv()
@@ -307,7 +348,43 @@ class ThresholdAgentTest(absltest.TestCase):
       _ = agent.act(env.observation_space.sample(), False)
 
     self.assertFalse(agent.frozen)  # Agent is not frozen.
-    self.assertFalse(agent._global_threshold)  # Agent has not learned.
+    self.assertFalse(agent.global_threshold)  # Agent has not learned.
+
+  def test_agent_seed(self):
+    env = test_util.DummyEnv()
+
+    params = classifier_agents.ScoringAgentParams(
+        burnin=10,
+        freeze_classifier_after_burnin=False,
+        default_action_fn=env.action_space.sample,
+        feature_keys=['x'])
+
+    agent = classifier_agents.ThresholdAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.BinarizedScalarDeltaReward('x'),
+        params=params)
+
+    agent.seed(100)
+    a = agent.rng.randint(0, 1000)
+    agent.seed(100)
+    b = agent.rng.randint(0, 1000)
+    self.assertEqual(a, b)
+
+  def test_interact_with_env_replicable(self):
+    env = test_util.DummyEnv()
+    params = classifier_agents.ScoringAgentParams(
+        burnin=10,
+        freeze_classifier_after_burnin=False,
+        default_action_fn=env.action_space.sample,
+        feature_keys=['x'])
+
+    agent = classifier_agents.ThresholdAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.BinarizedScalarDeltaReward('x'),
+        params=params)
+    test_util.run_test_simulation(env=env, agent=agent)
 
 
 class ClassifierAgentTest(absltest.TestCase):
@@ -352,9 +429,7 @@ class ClassifierAgentTest(absltest.TestCase):
 
   def test_agent_trains_with_two_features(self):
     params = classifier_agents.ScoringAgentParams(
-        default_action_fn=lambda: 0,
-        feature_keys=['x', 'y'],
-        burnin=200)
+        default_action_fn=lambda: 0, feature_keys=['x', 'y'], burnin=200)
 
     agent = classifier_agents.ClassifierAgent(
         action_space=gym.spaces.Discrete(2),
@@ -424,6 +499,18 @@ class ClassifierAgentTest(absltest.TestCase):
     # cannot train to make a decision.
     with self.assertRaises(ValueError):
       agent._act_impl(env.observation_space.sample(), reward=1, done=False)
+
+  def test_interact_with_env_replicable(self):
+    env = test_util.DummyEnv()
+    params = classifier_agents.ScoringAgentParams(
+        default_action_fn=env.action_space.sample, feature_keys=['x'], burnin=5)
+
+    agent = classifier_agents.ClassifierAgent(
+        action_space=env.action_space,
+        observation_space=env.observation_space,
+        reward_fn=rewards.BinarizedScalarDeltaReward('x'),
+        params=params)
+    test_util.run_test_simulation(env=env, agent=agent)
 
 
 if __name__ == '__main__':

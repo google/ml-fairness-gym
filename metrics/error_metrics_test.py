@@ -133,6 +133,20 @@ class ErrorMetricTest(absltest.TestCase):
     logging.info('Measurement: %s.', measurement)
     self.assertEqual({1: 1}, measurement)
 
+  def test_recall_with_zero_denominator(self):
+    env = test_util.DeterministicDummyEnv(test_util.DummyParams(dim=1))
+    env.set_scalar_reward(rewards.NullReward())
+    # Ground truth is always 0, recall will have a zero denominator.
+    metric = error_metrics.RecallMetric(
+        env=env,
+        prediction_fn=lambda x: 0,
+        ground_truth_fn=lambda x: 0,
+        stratify_fn=lambda x: 1)
+
+    measurement = test_util.run_test_simulation(
+        env=env, agent=None, metric=metric, num_steps=50)
+    self.assertEqual({1: 0}, measurement)
+
   def test_precision_metric_correct_for_atomic_prediction_rule(self):
     def _ground_truth_fn(history_item):
       state, _ = history_item
@@ -151,6 +165,25 @@ class ErrorMetricTest(absltest.TestCase):
         env=env, agent=None, metric=metric, num_steps=50)
 
     self.assertEqual({1: 0.5}, measurement)
+
+  def test_precision_with_zero_denominator(self):
+    def _ground_truth_fn(history_item):
+      state, _ = history_item
+      return state.x[0]
+
+    env = test_util.DeterministicDummyEnv(test_util.DummyParams(dim=1))
+    env.set_scalar_reward(rewards.NullReward())
+    # Always predict 0, precision will have a zero denominator.
+    metric = error_metrics.PrecisionMetric(
+        env=env,
+        prediction_fn=lambda x: 0,
+        ground_truth_fn=_ground_truth_fn,
+        stratify_fn=lambda x: 1)
+
+    measurement = test_util.run_test_simulation(
+        env=env, agent=None, metric=metric, num_steps=50)
+
+    self.assertEqual({1: 0}, measurement)
 
   def test_confusion_metric_correct_for_sequence_prediction_rule(self):
     dim = 10

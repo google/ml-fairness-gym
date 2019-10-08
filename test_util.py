@@ -23,9 +23,10 @@ from __future__ import print_function
 import copy
 import attr
 import core
-import rewards
 import run_util
+from agents import random_agents
 from spaces import batch
+import gin
 import gym
 import numpy as np
 import simplejson as json
@@ -39,6 +40,7 @@ class DummyState(core.State):
   params = attr.ib()
 
 
+@gin.configurable
 class DummyEnv(core.FairnessEnv):
   """Simple Dummy Environment used for testing."""
   hidden_state_vars = ['rng']
@@ -89,8 +91,7 @@ class DummyParams(core.Params):
 class DeterministicDummyEnv(core.FairnessEnv):
   """Simple Dummy Environment with alternating binary state used for testing."""
 
-  observable_state_vars = {
-      'x': batch.Batch(gym.spaces.Discrete(2))}
+  observable_state_vars = {'x': batch.Batch(gym.spaces.Discrete(2))}
 
   def __init__(self, params=None):
     if params is None:
@@ -122,6 +123,11 @@ class DeterministicDummyEnv(core.FairnessEnv):
     return state
 
 
+# TODO(): There isn't actually anything to configure in DummyMetric,
+# but we mark it as configurable so that we can refer to it on the
+# right-hand-side of expressions in gin configurations.  Find out whether
+# there's a better way of indicating that than gin.configurable.
+@gin.configurable
 class DummyMetric(core.Metric):
   """Simple metric for testing.
 
@@ -134,60 +140,7 @@ class DummyMetric(core.Metric):
     return len(history)
 
 
-class DummyAgent(core.Agent):
-  """Simple agent that takes random actions."""
-
-  def __init__(self, action_space, observation_space, default_action=None,
-               reward_fn=None, seed=500):
-    # Avoid modifying the action space of the environment when we seed it.
-    action_space = copy.deepcopy(action_space)
-    action_space.seed(seed)
-    super(DummyAgent, self).__init__(action_space, reward_fn,
-                                     observation_space)
-    self.default_action = default_action
-    if reward_fn is None:
-      self.reward_fn = rewards.NullReward()
-
-  def initial_action(self):
-    """Describes default action of the agent when no observation is given."""
-    if self.default_action is not None:
-      action = self.default_action
-    else:
-      action = self.action_space.sample()
-    if not self.action_space.contains(action):
-      raise gym.error.InvalidAction('Invalid action: %s' % action)
-    return action
-
-  def _act_impl(self, observation, reward, done):
-    """Returns an action from `self.action_space`.
-
-    Args:
-      observation: An observation in self.observation_space.
-      reward: A scalar value that can be used as a supervising signal.
-      done: A boolean indicating whether the episode is over.
-
-    Raises:
-      core.EpisodeDoneError if `done` is True.
-      core.InvalidObservationError if observation is not in
-        `self.observation_space`.
-      core.InvalidRewardError if reward is not a scalar or None.
-    """
-    if done:
-      raise core.EpisodeDoneError('Called act on a done episode.')
-
-    if not self.observation_space.contains(observation):
-      raise core.InvalidObservationError('Invalid observation: %s' %
-                                         observation)
-
-    core.validate_reward(reward)
-    return self.action_space.sample()
-
-
-def setup_test_simulation(env=None,
-                          agent=None,
-                          metric=None,
-                          agent_seed=None,
-                          return_copy=False):
+def setup_test_simulation(env=None, agent=None, metric=None, return_copy=False):
   """Create an environment, agent, and metric for testing purposes.
 
   Arguments that are left as None will be replaced by dummy versions defined
@@ -197,10 +150,9 @@ def setup_test_simulation(env=None,
     env: A `core.FairnessEnv` or None.
     agent: A `core.Agent` or None.
     metric: A `core.Metric` or None.
-    agent_seed: An integer random seed for the dummy agent. Ignored if an agent
-      is supplied through the arguments.
     return_copy: If True, copies of the environment, agent, and auditors are
       returned rather than the originals.
+
   Returns:
     An (environment, agent, metric) tuple.
   """
@@ -208,7 +160,8 @@ def setup_test_simulation(env=None,
     env = DummyEnv()
 
   if agent is None:
-    agent = DummyAgent(env.action_space, env.observation_space, seed=agent_seed)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
 
   if metric is None:
     metric = DummyMetric(env)
@@ -249,7 +202,7 @@ def run_test_simulation(env=None,
     A measurement result.
   """
   env, agent, metric = setup_test_simulation(
-      env=env, agent=agent, metric=metric, agent_seed=seed)
+      env=env, agent=agent, metric=metric)
 
   # Create the clones before any simulation is run.
   if check_reproducibility:
@@ -261,12 +214,13 @@ def run_test_simulation(env=None,
       run_util.run_stackelberg_simulation
       if stackelberg else run_util.run_simulation)
 
-  result = simulator(env, agent, metric, num_steps, seed=seed)
+  result = simulator(env, agent, metric, num_steps, seed=seed, agent_seed=seed)
 
   if check_reproducibility:
     base_history = env.serialize_history()
     cloned_agent, cloned_metric = clones
-    simulator(env, cloned_agent, cloned_metric, num_steps, seed=seed)
+    simulator(
+        env, cloned_agent, cloned_metric, num_steps, seed=seed, agent_seed=seed)
     cloned_history = env.serialize_history()
 
     # Check reproducibility by comparing histories of the cloned run with the.
@@ -274,8 +228,8 @@ def run_test_simulation(env=None,
     base_history = json.loads(base_history)['history']
     cloned_history = json.loads(cloned_history)['history']
     for step, ((state_a, action_a),
-               (state_b, action_b)) in enumerate(zip(base_history,
-                                                     cloned_history)):
+               (state_b,
+                action_b)) in enumerate(zip(base_history, cloned_history)):
       if state_a != state_b:
         raise core.NotReproducibleError('Step %d. State mismatch: %s vs %s' %
                                         (step, state_a, state_b))

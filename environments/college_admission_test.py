@@ -22,6 +22,7 @@ from absl.testing import absltest
 import core
 import params
 import test_util
+from agents import random_agents
 from environments import college_admission
 import numpy as np
 
@@ -41,13 +42,15 @@ class CollegeAdmissionsTest(absltest.TestCase):
   def test_parties_can_interact_gaming(self):
     """Test stackelberg simulation."""
     env = college_admission.CollegeAdmissionsEnv(user_params={'gaming': True})
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
     test_util.run_test_simulation(agent=agent, env=env, stackelberg=True)
 
   def test_parties_can_interact_no_gaming(self):
     """Test stackelberg simulation with no gaming."""
     env = college_admission.CollegeAdmissionsEnv(user_params={'gaming': False})
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
     test_util.run_test_simulation(agent=agent, env=env, stackelberg=True)
 
   def test_manipulate_features_no_gaming(self):
@@ -60,8 +63,9 @@ class CollegeAdmissionsTest(absltest.TestCase):
             1: 4
         }
     })
-    agent = test_util.DummyAgent(
+    agent = random_agents.RandomAgent(
         env.action_space,
+        None,
         env.observation_space,
         default_action={
             'threshold': np.array(0.8),
@@ -96,8 +100,9 @@ class CollegeAdmissionsTest(absltest.TestCase):
                 1: 4
             }
         })
-    agent = test_util.DummyAgent(
+    agent = random_agents.RandomAgent(
         env.action_space,
+        None,
         env.observation_space,
         default_action={
             'threshold': np.array(0.8),
@@ -133,8 +138,9 @@ class CollegeAdmissionsTest(absltest.TestCase):
                 1: 4
             }
         })
-    agent = test_util.DummyAgent(
+    agent = random_agents.RandomAgent(
         env.action_space,
+        None,
         env.observation_space,
         default_action={
             'threshold': np.array(0.8),
@@ -189,8 +195,9 @@ class CollegeAdmissionsTest(absltest.TestCase):
     """Tests predictions by jury, given modified scores are as expected."""
     env = college_admission.CollegeAdmissionsEnv(
         user_params={'num_applicants': 4})
-    agent = test_util.DummyAgent(
+    agent = random_agents.RandomAgent(
         env.action_space,
+        None,
         env.observation_space,
         default_action={
             'threshold': np.array(0.8),
@@ -248,8 +255,9 @@ class CollegeAdmissionsTest(absltest.TestCase):
         'num_applicants': 4,
         'max_steps': 8
     })
-    agent = test_util.DummyAgent(
+    agent = random_agents.RandomAgent(
         env.action_space,
+        None,
         env.observation_space,
         default_action={
             'threshold': np.array(0.8),
@@ -279,8 +287,9 @@ class CollegeAdmissionsTest(absltest.TestCase):
         'gaming': False,
         'noisy_features': True
     })
-    agent = test_util.DummyAgent(
+    agent = random_agents.RandomAgent(
         env.action_space,
+        None,
         env.observation_space,
         default_action={
             'threshold': np.array(0.8),
@@ -296,8 +305,9 @@ class CollegeAdmissionsTest(absltest.TestCase):
         'gaming': False,
         'noisy_features': False
     })
-    agent = test_util.DummyAgent(
+    agent = random_agents.RandomAgent(
         env.action_space,
+        None,
         env.observation_space,
         default_action={
             'threshold': np.array(0.8),

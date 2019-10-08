@@ -20,14 +20,12 @@ There are two groups of applicants, group 1 and group 2.
 At the beginning of the simulation, group 2 is disadvantaged - their
 distribution over credit scores is lower.
 
-
 <p align="center">
   <img src="img/initial_credit_distribution.png">
   <br>
   Histogram of credit score distributions at the start of the simulation.<br>
   Triangle markers indicate the median credit score for each group.
 </p>
-
 
 The classifier is trying to find one or more appropriate threshold(s) for giving
 out loans. It will follow a simple rule. For the first 200 steps, it will give
@@ -42,9 +40,10 @@ Run the following command to run a simulation:
 python examples/lending_demo.py --num_steps=5000
 ```
 
-Congratulations, you've run your first fairness-gym simulation!
+Congratulations, you've run your first ML-fairness-gym simulation!
 
 ## Interpreting the generated results
+
 There are a lot of angles to examine this simulation from. Let's look at the
 plots that are generated.
 
@@ -55,7 +54,7 @@ bank. On average, how much money it made per step. This is hard to interpret in
 isolation, but we can compare different strategies to see how they compare.
 
 ```console
-Profit Max reward 0.089418
+Profit Max reward 0.110022
 ```
 
 ### Precision
@@ -91,7 +90,7 @@ the start of the simulation.
 Final distribution of credit scores is another metric to look at. After the
 simulation has been run for 5000 steps, which group is advantaged?
 
-This process has brought the distribution of credit scores very close together.
+This process has brought the distribution of credit scores closer together.
 
 ### Recall
 
@@ -99,8 +98,8 @@ This process has brought the distribution of credit scores very close together.
   <img src="img/recall.png">
 </p>
 
-This metric is counterfactual because it requires reasoning about
-whether someone who was rejected for a loan _would have paid it back_.
+This metric is counterfactual because it requires reasoning about whether
+someone who was rejected for a loan _would have paid it back_.
 
 Members of group 2 who would have paid back, are less likely to receive loans.
 
@@ -128,10 +127,11 @@ python examples/lending_demo.py --equalize_opportunity --num_steps=5000
 A number of things have now changed.
 
 ### Cumulative loans
-The cumulative loans plot shows that group 2 started out with fewer loans, but
-ends up “ahead” after about 4000 steps. If this plot continued for another 5000
-steps, what do you think you would happen? Change the --num_steps argument of
-the simulation to find out.
+
+The cumulative loans plot shows that group 2 started out same number of loans,
+but ends up “ahead” after about 2000 steps. If this plot continued for another
+5000 steps, what do you think you would happen? Change the --num_steps argument
+of the simulation to find out.
 
 ### Final distribution
 
@@ -140,6 +140,7 @@ a good thing or a bad thing? It certainly highlights that applying a policy for
 a long time unintended consequences.
 
 ### Recall
+
 The recall plots show an increase in recall for group 2 - but is equality of
 opportunity really being achieved?
 
@@ -149,8 +150,9 @@ but a lot has changed since then. Can you design an agent that will maintain
 equality of opportunity throughout a long simulation?
 
 ### Profit
+
 ```console
-Profit Eq. opportunity 0.127626
+Profit Eq. opportunity 0.132426
 ```
 
 This is truly surprising. The equality of opportunity threshold scheme is
@@ -167,6 +169,7 @@ the long term. Will this always happen? Under what conditions does it happen? Is
 there an even more profitable policy out there?
 
 ## Next steps
+
 There are lots of questions to explore in this environment. Take a look at
 examples/lending.py to see the experiment class. Try different parameters - or
 design an entirely new agent.

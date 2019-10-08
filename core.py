@@ -23,11 +23,12 @@ from __future__ import print_function
 
 import copy
 import enum
-from typing import Any, Callable, Dict, List, Optional, Text, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Text, Tuple, TypeVar, Union
 
 from absl import flags
 from absl import logging
 import attr
+import gin
 import gym
 from gym.utils import seeding
 import gym.utils.json_utils
@@ -173,10 +174,10 @@ class HistoryItem(object):
     return iter(attr.astuple(self, recurse=False))
 
 
-HistoryPointType = HistoryItem
-HistoryType = List[HistoryPointType]
+HistoryType = List[HistoryItem]
 
 
+@gin.configurable
 @attr.s
 class Params(object):
   """Simple mutable storage class for parameter variables."""
@@ -250,7 +251,7 @@ class FairnessEnv(gym.Env):
   the `step` method.
   """
 
-  observable_state_vars = []
+  observable_state_vars = {}  # type: Mapping[Text, gym.Space]
 
   # Should inherit from gym.Space
   action_space = None  # type: Optional[gym.Space]
@@ -303,8 +304,10 @@ class FairnessEnv(gym.Env):
       gym.error.InvalidAction: If `action` is not in `self.action_space`.
     """
     if self.state is None:
-      raise NotInitializedError('State is None. State must be initialized in a '
-                                'reset() call before taking a step.')
+      raise NotInitializedError(
+          'State is None. State must be initialized before taking a step.'
+          'If using core.FairnessEnv, subclass and implement necessary methods.'
+      )
 
     if not self.action_space.contains(action):
       raise gym.error.InvalidAction('Invalid action: %s' % action)
@@ -580,3 +583,8 @@ class Agent(object):
     return np.concatenate([
         np.array(feat).reshape((-1,)) for _, feat in sorted(observation.items())
     ])
+
+  def seed(self, value):
+    rng, seed = seeding.np_random(value)
+    self.rng = rng
+    return [seed]

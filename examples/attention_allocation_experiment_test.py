@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 from absl.testing import absltest
-import test_util
+from agents import random_agents
 from environments import attention_allocation
 from examples import attention_allocation_experiment
 import simplejson as json
@@ -44,7 +44,7 @@ def _setup_experiment():
       seed=0,
       env_class=attention_allocation.LocationAllocationEnv,
       env_params=_get_base_env_params(),
-      agent_class=test_util.DummyAgent)
+      agent_class=random_agents.RandomAgent)
 
 
 class AttentionAllocationExperimentTest(absltest.TestCase):

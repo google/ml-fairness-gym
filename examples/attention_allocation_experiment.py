@@ -31,7 +31,58 @@ import core
 import run_util
 from metrics import value_tracking_metrics
 import numpy as np
-from typing import Any, List, Mapping, Text, Tuple
+from typing import Any, Callable, List, Mapping, Optional, Text, Tuple
+
+
+class RatioMetric(core.Metric):
+  """Gets avg ratio between two state variables."""
+
+  def __init__(self,
+               env,
+               selection_fn,
+               realign_fn = None):
+    super(RatioMetric, self).__init__(env, realign_fn)
+    self.selection_fn = selection_fn
+
+  def measure(self, env):
+    history = self._extract_history(env)
+    ratios = [
+        self.selection_fn(history_item)[0] /
+        np.asarray(self.selection_fn(history_item)[1], dtype=float)
+        for history_item in history
+    ]
+    ratios_no_inf_nan = []
+    for item in ratios:
+      item[item == np.inf] = 1
+      item = np.nan_to_num(item)
+      ratios_no_inf_nan.append(item)
+    return np.average(ratios_no_inf_nan, axis=0)
+
+
+class WeightedRatioMetric(core.Metric):
+  """Gets weighted avg ratio between two state variables."""
+
+  def __init__(self,
+               env,
+               selection_fn,
+               realign_fn = None):
+    super(WeightedRatioMetric, self).__init__(env, realign_fn)
+    self.selection_fn = selection_fn
+
+  def measure(self, env):
+    history = self._extract_history(env)
+    # By getting the ratio as sum of item / sum of item 2, the average is
+    # weighted by the counts of the items.
+    numerator = np.sum(
+        np.asarray(
+            [self.selection_fn(history_item)[0] for history_item in history]),
+        axis=0)
+    denominator = np.sum(
+        np.asarray(
+            [self.selection_fn(history_item)[1] for history_item in history],
+            dtype=float),
+        axis=0)
+    return np.divide(numerator, denominator)
 
 
 @attr.s
@@ -49,6 +100,9 @@ class Experiment(object):
   # Random seed.
   seed = attr.ib(default=0)  # type: int
 
+  # Random seed for agent.
+  agent_seed = attr.ib(default=50)  # type: int
+
   # Parameterization of the environment.
   env_params = attr.ib(factory=core.Params)  # type: core.Params
 
@@ -56,10 +110,10 @@ class Experiment(object):
   agent_params = attr.ib(factory=core.Params)  # type: core.Params
 
   # Environment class to for this experiment.
-  env_class = attr.ib(default=core.FairnessEnv)  # type: core.FairnessEnv
+  env_class = attr.ib(default=core.FairnessEnv)  # type: Type[core.FairnessEnv]
 
   # Agent class for this experiment.
-  agent_class = attr.ib(default=core.Agent)  # type: core.Agent
+  agent_class = attr.ib(default=core.Agent)  # type: Type[core.Agent]
 
   # Environment's relevant history.
   history = attr.ib(
@@ -69,16 +123,16 @@ class Experiment(object):
     """Instantiates and returns an environment, agent pair."""
     env = self.env_class(self.env_params)
 
-    if self.agent_class.__name__ == 'DummyAgent':
+    if self.agent_class.__name__ == 'RandomAgent':
       agent = self.agent_class(
-          env.action_space, env.observation_space, 0, seed=self.seed)
+          env.action_space, None, env.observation_space)
     else:
       agent = self.agent_class(
           action_space=env.action_space,
-          observation_space=env.observation_space,
           reward_fn=lambda x: 0,
+          observation_space=env.observation_space,
           params=self.agent_params)
-      agent.rng.seed(self.seed)
+    agent.seed(self.agent_seed)
     return env, agent
 
 
@@ -95,10 +149,13 @@ def _get_relevant_history(env):
 def run_generator(experiment):
   """Yield experiment object with seed incremented to run a simulation."""
   seed = experiment.seed
+  agent_seed = experiment.agent_seed
   for _ in range(experiment.num_runs):
     experiment_copy = copy.deepcopy(experiment)
     experiment_copy.seed = seed
+    experiment_copy.agent_seed = agent_seed
     seed += 1
+    agent_seed += 1
     yield experiment_copy
 
 
@@ -120,7 +177,21 @@ def run_single_simulation(experiment):
   occurred_incidents_metric = value_tracking_metrics.SummingMetric(
       env, _occurred_incidents_selection_fn)
 
-  metrics = [discovered_incidents_metric, occurred_incidents_metric]
+  def _discovered_occurred_selection_fn(history_step):
+    state, _ = history_step
+    return state.incidents_seen, state.incidents_occurred
+
+  discovered_occurred_ratio_metric = RatioMetric(
+      env, _discovered_occurred_selection_fn)
+
+  discovered_occurred_ratio_weighted_metric = WeightedRatioMetric(
+      env, _discovered_occurred_selection_fn)
+
+  metrics = [
+      discovered_incidents_metric, occurred_incidents_metric,
+      discovered_occurred_ratio_metric,
+      discovered_occurred_ratio_weighted_metric
+  ]
 
   metric_results = run_util.run_simulation(env, agent, metrics,
                                            experiment.num_steps,
@@ -145,7 +216,10 @@ def run(experiment):
 
   averaged_metrics = np.average(all_runs_metrics, axis=0).tolist()
 
-  metric_names = ['discovered_incidents', 'occurred_incidents', 'history']
+  metric_names = [
+      'discovered_incidents', 'occurred_incidents', 'discovered_occurred_ratio',
+      'discovered_occurred_ratio_weighted', 'history'
+  ]
 
   named_metric_results = dict(zip(metric_names, averaged_metrics))
 

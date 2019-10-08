@@ -22,6 +22,7 @@ from __future__ import print_function
 
 from absl.testing import absltest
 import test_util
+from agents import random_agents
 from environments import attention_allocation
 import numpy as np
 from six.moves import range
@@ -61,7 +62,8 @@ class LocationAllocationTest(absltest.TestCase):
     """
     env = attention_allocation.LocationAllocationEnv()
     env.seed(0)
-    agent = test_util.DummyAgent(env.action_space, env.observation_space)
+    agent = random_agents.RandomAgent(env.action_space, None,
+                                      env.observation_space)
     observation = env.reset()
     action = agent.act(observation, False)
     crimes, reported_incidents = attention_allocation._sample_incidents(

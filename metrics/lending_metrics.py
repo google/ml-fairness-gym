@@ -23,7 +23,7 @@ from __future__ import print_function
 import core
 from environments import lending
 import numpy as np
-from typing import Dict
+from typing import Dict, Text
 
 
 class CreditDistribution(core.Metric):
@@ -40,7 +40,6 @@ class CreditDistribution(core.Metric):
     result = {}
     for component in params.applicant_distribution.components:
       group_id = np.argmax(component.components[0].group_membership.mean)
-      # Use string keys to make json easier.
       result[str(group_id)] = component.weights
     return result
 
@@ -61,9 +60,9 @@ class CumulativeLoans(core.Metric):
     history = self._extract_history(env)
     result = []
     for history_item in history:
+      state = history_item.state  # type: lending.State
       # Take advantage of the one-hot encoding of state.group in order to build
       # a (num_steps) x (num_groups) array with 1s where loans were given.
       # Multiplying by action makes a row of all zeros if the loan was rejected.
-      result.append(
-          np.array(history_item.state.group) * history_item.action)
+      result.append(np.array(state.group) * history_item.action)
     return np.cumsum(result, 0).T

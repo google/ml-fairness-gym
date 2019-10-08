@@ -1,0 +1,55 @@
+import fairness_gym.agents.college_admission_jury
+import fairness_gym.environments.college_admission
+import fairness_gym.examples.college_admission_util
+import fairness_gym.metrics.error_metrics
+import fairness_gym.metrics.value_tracking_metrics
+import fairness_gym.runner_lib
+
+# Configure the runner.
+Runner.num_steps = 3000
+Runner.seed = 1
+Runner.env_class = @college_admission.CollegeAdmissionsEnv
+Runner.agent_class = @college_admission_jury.FixedJury
+Runner.simulation_fn = @runner_lib.run_stackelberg_simulation
+
+# Configure the agent.
+college_admission_jury.FixedJury.threshold = 0.5
+college_admission_jury.FixedJury.epsilon_greedy = False
+college_admission_jury.FixedJury.decay_steps = 20
+college_admission_jury.FixedJury.initial_epsilon_prob = 0.1
+college_admission_jury.FixedJury.epsilon_prob_decay_rate = 0.02
+
+# Specify metrics.
+Runner.metric_classes = {
+    "social_burden": @social_burden/value_tracking_metrics.AggregatorMetric,
+    "accuracy": @accuracy/error_metrics.AccuracyMetric,
+    "overall_accuracy": @overall_accuracy/error_metrics.AccuracyMetric,
+    "overall_social_burden": @overall_social_burden/value_tracking_metrics.AggregatorMetric,
+    "final_threshold": @final_threshold/value_tracking_metrics.FinalValueMetric,
+}
+
+# Configure metrics.
+social_burden/value_tracking_metrics.AggregatorMetric.selection_fn = @college_admission_util.selection_fn_social_burden_eligible_auditor
+social_burden/value_tracking_metrics.AggregatorMetric.modifier_fn = None
+social_burden/value_tracking_metrics.AggregatorMetric.stratify_fn= @college_admission_util.stratify_by_group
+social_burden/value_tracking_metrics.AggregatorMetric.realign_fn = @college_admission_util.realign_history
+social_burden/value_tracking_metrics.AggregatorMetric.calc_mean = True
+
+accuracy/error_metrics.AccuracyMetric.numerator_fn = @college_admission_util.accuracy_nr_fn
+accuracy/error_metrics.AccuracyMetric.denominator_fn = None
+accuracy/error_metrics.AccuracyMetric.stratify_fn = @college_admission_util.stratify_by_group
+accuracy/error_metrics.AccuracyMetric.realign_fn = @college_admission_util.realign_history
+
+overall_accuracy/error_metrics.AccuracyMetric.numerator_fn = @college_admission_util.accuracy_nr_fn
+overall_accuracy/error_metrics.AccuracyMetric.denominator_fn = None
+overall_accuracy/error_metrics.AccuracyMetric.stratify_fn = @college_admission_util.stratify_to_one_group
+overall_accuracy/error_metrics.AccuracyMetric.realign_fn = @college_admission_util.realign_history
+
+overall_social_burden/value_tracking_metrics.AggregatorMetric.selection_fn = @college_admission_util.selection_fn_social_burden_eligible_auditor
+overall_social_burden/value_tracking_metrics.AggregatorMetric.modifier_fn = None
+overall_social_burden/value_tracking_metrics.AggregatorMetric.stratify_fn= @college_admission_util.stratify_to_one_group
+overall_social_burden/value_tracking_metrics.AggregatorMetric.realign_fn = @college_admission_util.realign_history
+overall_social_burden/value_tracking_metrics.AggregatorMetric.calc_mean = True
+
+final_threshold/value_tracking_metrics.FinalValueMetric.state_var = "decision_threshold"
+final_threshold/value_tracking_metrics.FinalValueMetric.realign_fn = @college_admission_util.realign_history

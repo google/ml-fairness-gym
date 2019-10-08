@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for classifier_agents.py."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -116,8 +114,7 @@ class NaiveJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        threshold=0.7,
-        env_initial_params=env.initial_params)
+        threshold=0.7)
     self.assertEqual(agent.initial_action()['threshold'], 0.7)
     self.assertEqual(agent.initial_action()['epsilon_prob'], 0)
 
@@ -127,8 +124,7 @@ class NaiveJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        threshold=0.7,
-        env_initial_params=env.initial_params)
+        threshold=0.7)
     test_util.run_test_simulation(env=env, agent=agent, stackelberg=True)
 
   def test_get_default_features_returns_same_features(self):
@@ -143,8 +139,7 @@ class NaiveJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        threshold=0.7,
-        env_initial_params=env.initial_params)
+        threshold=0.7)
     features = agent._get_default_features(observations)
     self.assertListEqual(features, [0.2, 0.3, 0.5])
 
@@ -160,8 +155,7 @@ class NaiveJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        threshold=0.7,
-        env_initial_params=env.initial_params)
+        threshold=0.7)
     labels = agent._label_fn(observations)
     self.assertListEqual(labels, [1, 0, 1])
 
@@ -174,8 +168,7 @@ class NaiveJuryTest(absltest.TestCase):
         reward_fn=(lambda x: 0),
         threshold=0.3,
         burnin=4,
-        freeze_classifier_after_burnin=False,
-        env_initial_params=env.initial_params)
+        freeze_classifier_after_burnin=False)
     test_util.run_test_simulation(
         env=env, agent=agent, num_steps=10, stackelberg=True)
     actions = [float(action['threshold']) for _, action in env.history]
@@ -191,8 +184,7 @@ class NaiveJuryTest(absltest.TestCase):
         reward_fn=(lambda x: 0),
         threshold=0.3,
         burnin=4,
-        freeze_classifier_after_burnin=True,
-        env_initial_params=env.initial_params)
+        freeze_classifier_after_burnin=True)
     test_util.run_test_simulation(
         env=env, agent=agent, num_steps=10, stackelberg=True)
     actions = [float(action['threshold']) for _, action in env.history]
@@ -217,8 +209,7 @@ class NaiveJuryTest(absltest.TestCase):
         reward_fn=(lambda x: 0),
         threshold=0,
         burnin=9,
-        freeze_classifier_after_burnin=True,
-        env_initial_params=env.initial_params)
+        freeze_classifier_after_burnin=True)
     test_util.run_test_simulation(
         env=env, agent=agent, num_steps=10, stackelberg=True)
     learned_threshold = env.history[-1].action['threshold']
@@ -233,8 +224,8 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        burnin=10,
-        env_initial_params=env.initial_params)
+        group_cost=env.initial_params.group_cost,
+        burnin=10)
     test_util.run_test_simulation(env=env, agent=agent, stackelberg=True)
 
   def test_correct_max_score_change_calculated_no_subsidy(self):
@@ -253,7 +244,10 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        env_initial_params=env.initial_params)
+        group_cost=env.initial_params.group_cost,
+        subsidize=env.initial_params.subsidize,
+        subsidy_beta=env.initial_params.subsidy_beta,
+        gaming_control=env.initial_params.gaming_control)
     obs, _, _, _ = env.step(agent.initial_action())
     max_change = agent._get_max_allowed_score_change(obs)
     self.assertEqual(max_change, [0.5, 0.25])
@@ -274,7 +268,10 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        env_initial_params=env.initial_params)
+        group_cost=env.initial_params.group_cost,
+        subsidize=env.initial_params.subsidize,
+        subsidy_beta=env.initial_params.subsidy_beta,
+        gaming_control=env.initial_params.gaming_control)
     obs, _, _, _ = env.step(agent.initial_action())
     max_change = agent._get_max_allowed_score_change(obs)
     self.assertEqual(max_change, [0.5, 0.3125])
@@ -286,7 +283,7 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        env_initial_params=env.initial_params)
+        group_cost=env.initial_params.group_cost)
     agent._features = [0.1, 0.2, 0.4, 0.4, 0.5, 0.6, 0.7, 0.8]
     agent._labels = [0, 0, 1, 0, 0, 1, 1, 1]
     agent._train_model()
@@ -305,7 +302,7 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        env_initial_params=env.initial_params)
+        group_cost=env.initial_params.group_cost)
     observations = {
         'test_scores_y': np.asarray([0.2, 0.3, 0.4, 0.5, 0.4]),
         'selected_applicants': np.asarray([0, 1, 0, 1, 1]),
@@ -335,7 +332,8 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
-        env_initial_params=env.initial_params)
+        group_cost=env.initial_params.group_cost,
+        gaming_control=env.initial_params.gaming_control)
     observations = {
         'test_scores_y': np.asarray([0.2, 0.3, 0.4, 0.5, 0.4]),
         'selected_applicants': np.asarray([0, 1, 0, 1, 1]),
@@ -363,9 +361,10 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
+        group_cost=env.initial_params.group_cost,
+        gaming_control=env.initial_params.gaming_control,
         epsilon_greedy=True,
-        initial_epsilon_prob=0.2,
-        env_initial_params=env.initial_params)
+        initial_epsilon_prob=0.2)
     observations = {
         'test_scores_y': np.asarray([0.2, 0.3, 0.4, 0.5, 0.4]),
         'selected_applicants': np.asarray([0, 1, 0, 1, 1]),
@@ -393,9 +392,10 @@ class RobustJuryTest(absltest.TestCase):
         action_space=env.action_space,
         observation_space=env.observation_space,
         reward_fn=(lambda x: 0),
+        group_cost=env.initial_params.group_cost,
+        gaming_control=env.initial_params.gaming_control,
         epsilon_greedy=True,
-        initial_epsilon_prob=0.2,
-        env_initial_params=env.initial_params)
+        initial_epsilon_prob=0.2)
     observations = {
         'test_scores_y': np.asarray([0.2, 0.3, 0.4, 0.5, 0.4]),
         'selected_applicants': np.asarray([0, 1, 0, 1, 1]),
@@ -417,8 +417,8 @@ class RobustJuryTest(absltest.TestCase):
           action_space=env.action_space,
           observation_space=env.observation_space,
           reward_fn=(lambda x: 0),
-          burnin=1,
-          env_initial_params=env.initial_params)
+          group_cost=env.initial_params.group_cost,
+          burnin=1)
 
 
 if __name__ == '__main__':

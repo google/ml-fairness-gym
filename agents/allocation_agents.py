@@ -23,6 +23,8 @@ from __future__ import print_function
 
 import copy
 from typing import Any, Callable, List, Mapping, Optional, Text, TypeVar
+
+from absl import logging
 import attr
 import core
 from spaces import multinomial
@@ -55,8 +57,33 @@ def _get_added_vector_features(observation,
   return features
 
 
+def _allocate_proportional_to_beliefs(rng,
+                                      n_resource,
+                                      beliefs):
+  """Returns array of attention allocations proportional to beliefs.
+
+  Args:
+    rng: a
+    n_resource: An int defining the amount of attention that can be allocated -
+      the returned array has sum equal to n_resource.
+    beliefs: An array of integers reflecting the belief of the current incident
+      rate across groups.
+
+  Returns:
+    An array with length equal to length of input counts that sums to
+      n_resource.
+  """
+  beliefs_total = float(np.sum(beliefs))
+  if beliefs_total > 0:
+    probabilities = [(belief / beliefs_total) for belief in beliefs]
+  else:
+    # If counts are all 0, we want equal probabilities.
+    probabilities = [(1. / len(beliefs)) for _ in beliefs]
+  return rng.multinomial(n_resource, probabilities)
+
+
 @attr.s
-class ProbabilityMatchingAgentParams(core.Params):
+class AllocationAgentParams(core.Params):
   feature_selection_fn = attr.ib(
       default=None
   )  # type: Optional[Callable[[Mapping[Text, Any], int, Optional[List[Text]]], np.ndarray]]
@@ -65,31 +92,31 @@ class ProbabilityMatchingAgentParams(core.Params):
   )  # type: Optional[Callable[[np.random.RandomState, List[float], Mapping[Text, Any]], Mapping[Text, Any]]]
 
 
-_ProbabilityMatchingAgentParamsBound = TypeVar(
-    "_ProbabilityMatchingAgentParamsBound",
-    bound=ProbabilityMatchingAgentParams)
+_AllocationAgentParamsBound = TypeVar(
+    "_AllocationAgentParamsBound", bound=AllocationAgentParams)
 
 
-class ProbabilityMatchingAgent(core.Agent):
-  """Base class for probability matching agents.
+class AllocationAgent(core.Agent):
+  """Base class for allocating agents.
 
-  ProbabilityMatchingAgents allocate with a probability in proportion to an
-  internal
-  belief distribution derived from observations.
+  AllocationAgents maintain a belief about the underlying rates of incidents
+  for each location and allocate based on those beliefs according to some
+  scheme.
 
   Main API method of this class is:
 
     act: Take an observation and reward and returns an allocation as an action.
 
-  Subclasses must overwrite and implement _update_beliefs(features, beliefs).
+  Subclasses must overwrite and implement _update_beliefs(features, beliefs)
+  and _allocate(n_resource, beliefs).
   """
 
   def __init__(self, action_space,
                reward_fn, observation_space,
                params):
 
-    super(ProbabilityMatchingAgent, self).__init__(action_space, reward_fn,
-                                                   observation_space)
+    super(AllocationAgent, self).__init__(action_space, reward_fn,
+                                          observation_space)
     self.params = params
     self._n_bins = len(action_space.nvec)
 
@@ -132,15 +159,18 @@ class ProbabilityMatchingAgent(core.Agent):
 
     features = self.feature_selection_fn(observation)
     self.beliefs = self._update_beliefs(features, self.beliefs)
-    action = self._allocate_by_beliefs(self._n_resource, self.beliefs)
+    action = self._allocate(self._n_resource, self.beliefs)
 
     if not self.action_space.contains(action):
       raise gym.error.InvalidAction("Invalid action: %s" % action)
 
     return action
 
-  def _allocate_by_beliefs(self, n_resource,
-                           beliefs):
+  ####################################################################
+  # Method to be overridden by each proportional allocator agent.    #
+  ####################################################################
+
+  def _allocate(self, n_resource, beliefs):
     """Returns an array of attention allocations across groups.
 
     Args:
@@ -153,17 +183,7 @@ class ProbabilityMatchingAgent(core.Agent):
       An array with length equal to length of input counts that sums to
         n_resource.
     """
-    beliefs_total = float(np.sum(beliefs))
-    if beliefs_total > 0:
-      probabilities = [(belief / beliefs_total) for belief in beliefs]
-    else:
-      # If counts are all 0, we want equal probabilities.
-      probabilities = [(1. / len(beliefs)) for _ in beliefs]
-    return self.rng.multinomial(n_resource, probabilities)
-
-  ####################################################################
-  # Method to be overridden by each proportional allocator agent.    #
-  ####################################################################
+    raise NotImplementedError
 
   def _update_beliefs(self, features,
                       beliefs):
@@ -181,11 +201,11 @@ class ProbabilityMatchingAgent(core.Agent):
 
 
 @attr.s
-class NaiveProbabilityMatchingAgentParams(ProbabilityMatchingAgentParams):
+class NaiveProbabilityMatchingAgentParams(AllocationAgentParams):
   decay_prob = attr.ib(default=0.01)  # type: float
 
 
-class NaiveProbabilityMatchingAgent(ProbabilityMatchingAgent):
+class NaiveProbabilityMatchingAgent(AllocationAgent):
   """Naive probability matching agent whose beliefs are sums of counts of features."""
 
   def __init__(self,
@@ -201,6 +221,9 @@ class NaiveProbabilityMatchingAgent(ProbabilityMatchingAgent):
           self).__init__(action_space, reward_fn, observation_space, params)
 
     self.beliefs = np.zeros(self._n_bins, dtype=np.uint32)
+
+  def _allocate(self, n_resource, beliefs):
+    return _allocate_proportional_to_beliefs(self.rng, n_resource, beliefs)
 
   def _update_beliefs(self, features,
                       beliefs):
@@ -347,28 +370,31 @@ class _CensoredPoisson(model.GenericLikelihoodModel):
 
 
 @attr.s
-class MLEProbabilityMatchingAgentParams(ProbabilityMatchingAgentParams):
+class MLEProbabilityMatchingAgentParams(AllocationAgentParams):
   burn_steps = attr.ib(default=20)  # type: int
   interval = attr.ib(default=10)  # type: int
   window = attr.ib(default=0)  # type: int
   epsilon = attr.ib(default=0.1)  # type: float
 
 
-class MLEProbabilityMatchingAgent(ProbabilityMatchingAgent):
+_MLEProbabilityMatchingAgentParamsBound = TypeVar(
+    "_MLEProbabilityMatchingAgentParamsBound",
+    bound=MLEProbabilityMatchingAgentParams)
+
+
+class MLEProbabilityMatchingAgent(AllocationAgent):
   """Probability matching agent that estimates poisson parameter for each bin.
 
-  The agent then allocates with probability in proportion to the estimated
-  poisson parameters.
+  The agent then allocates with probability in proportion to the
+  parameters.
 
-  Assumes specific likelihood model defined by _CensoredPoisson() as the
-  likelihood model for the features.
+  Assumes specific likelihood model defined by _TruncatedPoisson() as the
+  likelihood model for the observations.
   """
 
-  def __init__(self,
-               action_space,
-               reward_fn,
-               observation_space,
-               params = None):
+  def __init__(self, action_space,
+               reward_fn, observation_space,
+               params):
 
     if params is None:
       params = MLEProbabilityMatchingAgentParams()
@@ -380,15 +406,15 @@ class MLEProbabilityMatchingAgent(ProbabilityMatchingAgent):
     self.last_allocation = None
     self.n_steps = 0
 
-  def _allocate_by_beliefs(self, n_resource, beliefs):
+  def _allocate(self, n_resource, beliefs):
     # With probability epsilon allocate with uniform probability.
     # With probability 1-epsilon, allocate according to belief.
-    if self.rng.binomial(1, self.params.epsilon):
+    if self.rng.random_sample() < self.params.epsilon:
+
       self.last_allocation = self.action_space.sample()
     else:
-      self.last_allocation = super(MLEProbabilityMatchingAgent,
-                                   self)._allocate_by_beliefs(
-                                       n_resource, beliefs)
+      self.last_allocation = _allocate_proportional_to_beliefs(
+          self.rng, n_resource, beliefs)
     return self.last_allocation
 
   def _update_beliefs(self, features, beliefs):
@@ -425,3 +451,207 @@ class MLEProbabilityMatchingAgent(ProbabilityMatchingAgent):
         results = ll_model.fit(disp=0)
         beliefs[i_bin] = results.params[0]
     return beliefs
+
+
+@attr.s
+class MLEGreedyAgentParams(MLEProbabilityMatchingAgentParams):
+  # Alpha is the constraint on equality of incident discovery across bins.
+  # Default of 1 means there is no constraint.
+  alpha = attr.ib(default=1.0)  # type: float
+
+  poisson_truncation_val = attr.ib(default=50)  # type: int
+
+
+class MLEGreedyAgent(MLEProbabilityMatchingAgent):
+  """Greedy agent that allocates to maximize yield under fairness constraint.
+
+  Assumes specific likelihood model defined by _CensoredPoisson() as the
+  likelihood model for the observations.
+
+  This agent is a version of the agent described in Elzayn et al.'s paper
+  "Fair Algorithms for Learning in Allocation Problems".
+
+  The agent allocates to maximize likelihood of each allocation discovering
+  another incident, while constraining allocations to approximately equalize
+  candidate discovery probability.
+  The candidate discovery probability is defined as
+  f_i(v_i) E{c_i~C_i}[min(v_i, c_i)/c_i], where c_i are the incidents occurred
+  in bin i (as drawn from distribution with lambda=C_i) and v_i are the units of
+  attention allocated to bin i.
+  The fairness constraint, alpha forces allocations to satisfy
+  |f_i(v_i)-f_j(v_j)] <= alpha for all pairs of bins i and j.
+  """
+
+  def __init__(self,
+               action_space,
+               reward_fn,
+               observation_space,
+               params = None):
+
+    if params is None:
+      params = MLEGreedyAgentParams()
+
+    super(MLEGreedyAgent, self).__init__(action_space, reward_fn,
+                                         observation_space, params)
+
+    self.data = [[] for _ in range(self._n_bins)]
+    self.last_allocation = None
+    self.n_steps = 0
+
+  def _calculate_tail_probability(self, x, rate):
+    """Calculates the probability c>=x for all c for a poisson(rate)."""
+    return 1 - stats.poisson.cdf(x - 1, rate)
+
+  def _construct_approx_fi_table(self, n_bins, rates, n_resource):
+    """Constructs a n_bins by n_resource+1 matrix of f_i values.
+
+    Args:
+      n_bins: int number of bins.
+      rates: rate for each bin.
+      n_resource: int number of resources available to allocate.
+
+    Returns:
+      np.ndarray of f_i(v_i) for every allocation, bin pair.
+    """
+    c_values = np.array(
+        range(1, self.params.poisson_truncation_val), dtype=float).reshape(
+            (self.params.poisson_truncation_val - 1, 1))
+    c_values_with0 = np.array(
+        range(self.params.poisson_truncation_val), dtype=float).reshape(
+            (self.params.poisson_truncation_val, 1))
+    alloc_vals = np.array(
+        range(1, n_resource), dtype=float).reshape((n_resource - 1, 1))
+    poissons = stats.poisson(mu=np.array(rates))
+    pmf_values = poissons.pmf(c_values_with0)
+
+    minimums = np.minimum(alloc_vals.T, c_values)
+    mins_over_c = np.divide(minimums, c_values)
+    # defining 0/0 to be 1, can change to np.zeros if 0/0 should be zero.
+    mins_over_c = np.concatenate((np.ones((1, n_resource - 1)), mins_over_c),
+                                 axis=0)
+    # can also switch the order of these concatenates depending on if min(v,c)/c
+    # where v=0, c=0 should be 0 or one.
+    mins_over_c = np.concatenate((np.zeros(
+        (self.params.poisson_truncation_val, 1)), mins_over_c),
+                                 axis=1)
+    fi = np.matmul(pmf_values.T, mins_over_c)
+    return fi
+
+  def _allocate(self, n_resource, beliefs):
+    """Returns an array of attention allocations across groups.
+
+    Args:
+      n_resource: An int defining the amount of attention that can be allocated
+        - the returned array has sum equal to n_resource.
+      beliefs: An array of integers reflecting the current belief of
+        distribution of target reward across groups.
+
+    Returns:
+      An array with length equal to length of input counts that sums to
+        n_resource.
+    """
+    # With probability epsilon allocate with uniform probability.
+    # With probability 1-epsilon, allocate according to belief.
+    if self.rng.binomial(1, self.params.epsilon):
+      self.last_allocation = self.action_space.sample()
+    else:
+      optimal_allocation = None
+      max_expected_yield = 0
+
+      # Construct entire fi table, and corresponding min and max fi tables.
+      # The fi table is a table of the expected probability that a incident
+      # in a bin is discovered by an attention unit, for each bin and each
+      # possible allocation amount for that bin.
+      fi_table = self._construct_approx_fi_table(self._n_bins, beliefs,
+                                                 self._n_resource + 1)
+      min_fi_table = np.maximum(fi_table - self.params.alpha, 0)
+      max_fi_table = min_fi_table + self.params.alpha
+
+      # For every bin.
+      for bin_i in range(self._n_bins):
+        current_allocation = np.zeros(
+            self._n_bins, dtype=self.action_space.dtype)
+        alloc_upperbound = np.zeros(self._n_bins, dtype=self.action_space.dtype)
+
+        # Get all upper and lower bounds with bin_i as starting bin.
+        rows = np.array([i for i in range(self._n_bins) if i != bin_i])
+        broadcast_shape = (self._n_resource + 1, len(rows),
+                           self._n_resource + 1)
+        lower_bounds = np.argmax(
+            (np.broadcast_to(fi_table[rows, :], broadcast_shape).T >=
+             min_fi_table[bin_i]).T,
+            axis=2)
+        upper_bounds = np.argmin(
+            (np.broadcast_to(fi_table[rows, :], broadcast_shape).T <=
+             max_fi_table[bin_i]).T,
+            axis=2) - 1
+        upper_bounds[upper_bounds == -1] = self._n_resource
+
+        # For every possible allocation to that bin.
+        for alloc_to_i in range(self._n_resource + 1):
+          current_allocation = np.zeros(
+              self._n_bins, dtype=self.action_space.dtype)
+          current_allocation[bin_i] = alloc_to_i
+          alloc_upperbound[rows] = upper_bounds[alloc_to_i]
+          # Set current allocation values to lower bounds.
+          current_allocation[rows] = lower_bounds[alloc_to_i]
+          alloc_upperbound[bin_i] = alloc_to_i
+
+          if np.sum(current_allocation) > self._n_resource or np.any(
+              current_allocation > alloc_upperbound):
+            # This allocation scheme requires more resource than available.
+            # Move on to next possible allocation scheme.
+            continue
+          remaining_resource = self._n_resource - np.sum(current_allocation)
+
+          # Now greedily allocate remaining resources to bins that have maximal
+          # marginal probability of making another discovery.
+          for _ in range(remaining_resource):
+            marginal_probs = []
+            for j in range(self._n_bins):
+              if current_allocation[j] < alloc_upperbound[j]:
+                marginal_probs.append(
+                    ((self._calculate_tail_probability(
+                        current_allocation[j] + 1, beliefs[j]) -
+                      self._calculate_tail_probability(current_allocation[j],
+                                                       beliefs[j])), j))
+            if not marginal_probs:
+              # Allocation cannot make full use of resources and satisfy
+              # fairness constraint go to next allocation.
+              break
+            next_bin = max(marginal_probs, key=lambda i: i[0])[1]
+            current_allocation[next_bin] += 1
+          if np.sum(current_allocation) < self._n_resource or np.any(
+              current_allocation > alloc_upperbound):
+            # This allocation scheme requires more resource than available
+            # or doesn't make full use of resources.
+            # Move on to next possible allocation scheme.
+            continue
+
+          # If current_allocation has the highest expected yield, store it as
+          # the optimal allocation.
+          # pylint: disable=g-complex-comprehension
+          expected_yield = np.sum([
+              np.sum([
+                  self._calculate_tail_probability(
+                      np.array(range(1, current_allocation[i] + 1)), beliefs[i])
+              ]) for i in range(self._n_bins)
+          ])
+          # pylint: enable=g-complex-comprehension
+
+          if expected_yield >= max_expected_yield:
+            max_expected_yield = expected_yield
+            optimal_allocation = current_allocation
+
+      if optimal_allocation is None:
+        print("No allocation found for this alpha: %f" % self.params.alpha)
+        logging.warning("No allocation found for this alpha: %f",
+                        self.params.alpha)
+        optimal_allocation = np.zeros(
+            self._n_bins, dtype=self.action_space.dtype)
+        raise gym.error.InvalidAction("Invalid action: %s with alpha %f" %
+                                      (optimal_allocation, self.params.alpha))
+
+      self.last_allocation = optimal_allocation
+
+    return self.last_allocation

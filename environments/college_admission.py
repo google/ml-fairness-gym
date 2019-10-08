@@ -30,6 +30,7 @@ import copy
 import attr
 import core
 import params
+import gin
 from gym import spaces
 import numpy as np
 
@@ -39,6 +40,7 @@ _EPSILON_VALUE = 1e-6
 _UNSELECTED_INDICATOR = 2
 
 
+@gin.configurable
 @attr.s
 class Params(core.Params):
   """College Admissions Params."""
@@ -91,6 +93,7 @@ class Params(core.Params):
   noisy_threshold = attr.ib(default=False)  # type: bool
 
 
+@gin.configurable
 @attr.s(cmp=False)
 class State(core.State):
   """College Admissions State."""
@@ -114,6 +117,7 @@ class State(core.State):
   num_manipulated = attr.ib(default=0)  # type: int
 
 
+@gin.configurable
 class CollegeAdmissionsEnv(core.FairnessEnv):
   """College Admissions Environment.
 

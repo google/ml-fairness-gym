@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Agents for P2P Renting environment."""
+"""Agents for college admissions environments."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,8 +22,9 @@ from __future__ import print_function
 
 import core
 import params
+import rewards
 from agents import threshold_policies
-from environments import college_admission
+import gin
 from gym import spaces
 import numpy as np
 from typing import Any, List, Mapping, Text, Optional, Callable
@@ -33,6 +34,7 @@ _SCORE_MIN = 0
 _UNSELECTED_INDICATOR = 2
 
 
+@gin.configurable
 class FixedJury(core.Agent):
   """Baseline college admission agent that uses a fixed threshold.
 
@@ -55,7 +57,6 @@ class FixedJury(core.Agent):
       initial_epsilon_prob = 0.7,
       decay_steps = 10,
       epsilon_prob_decay_rate = 0.02,
-      rng = None,
   ):
     """Initializes the agent.
 
@@ -70,8 +71,9 @@ class FixedJury(core.Agent):
        greedy agent.
      decay_steps: A positive integer.
      epsilon_prob_decay_rate: A positive float.
-     rng: a `np.random.RandomState` object or None.
     """
+    if reward_fn is None:
+      reward_fn = rewards.NullReward()
     super(FixedJury, self).__init__(action_space, reward_fn, observation_space)
     self._threshold = threshold
     self._epsilon_greedy = epsilon_greedy
@@ -79,7 +81,7 @@ class FixedJury(core.Agent):
     self._decay_rate = epsilon_prob_decay_rate
     self._decay_steps = decay_steps
     self._steps = 0
-    self._rng = np.random.RandomState() or rng
+    self.rng = np.random.RandomState()
 
   def _get_epsilon_prob(self):
     """Returns epsilon_prob if epsilon_greedy is True, else 0 (default)."""
@@ -118,6 +120,7 @@ class FixedJury(core.Agent):
     return self.initial_action()
 
 
+@gin.configurable
 class NaiveJury(FixedJury):
   """College admission scenario that simulates a naive jury in Stackelberg game.
 
@@ -130,12 +133,10 @@ class NaiveJury(FixedJury):
                action_space,
                reward_fn,
                observation_space,
-               env_initial_params,
                feature_selection_fn = None,
                label_fn = None,
                freeze_classifier_after_burnin = False,
                threshold = 0.5,
-               rng = None,
                burnin = -1,
                cost_matrix = None,
                epsilon_greedy = False,
@@ -148,14 +149,12 @@ class NaiveJury(FixedJury):
       action_space: a `gym.Space` that contains valid actions.
       reward_fn: a `RewardFn` object.
       observation_space: a `gym.Space` that contains valid observations.
-      env_initial_params: Params. Initial params of the environment.
       feature_selection_fn: Function that returns a feature vector suitable for
         training from observations.
       label_fn: Function that returns a label from observations and reward.
       freeze_classifier_after_burnin: If True, the classifier will freeze
         classifier after learning a model after burnin steps.
       threshold: Initial threshold.
-      rng: a `np.random.RandomState` object or None.
       burnin: Number of steps before using a learned policy.
       cost_matrix: a fairness_policies.CostMatrix object.
       epsilon_greedy: Bool. Whether we want to have an epsilon greedy agent.
@@ -172,14 +171,12 @@ class NaiveJury(FixedJury):
         epsilon_greedy=epsilon_greedy,
         initial_epsilon_prob=initial_epsilon_prob,
         decay_steps=decay_steps,
-        epsilon_prob_decay_rate=epsilon_prob_decay_rate,
-        rng=rng)
+        epsilon_prob_decay_rate=epsilon_prob_decay_rate)
     self._initial_threshold = threshold
     self._features = []
     self._labels = []
     self._burnin = burnin
     self._freeze_classifier_after_burnin = freeze_classifier_after_burnin
-    self._env_initial_params = env_initial_params
     self._feature_selection_fn = feature_selection_fn or self._get_default_features
     self._label_fn = label_fn or self._label_fn
 
@@ -279,6 +276,7 @@ class NaiveJury(FixedJury):
     ]
 
 
+@gin.configurable
 class RobustJury(NaiveJury):
   """College admission scenario, implements a robust jury in Stackelberg game.
 
@@ -296,9 +294,11 @@ class RobustJury(NaiveJury):
                action_space,
                reward_fn,
                observation_space,
-               env_initial_params,
+               group_cost,
+               subsidize = False,
+               subsidy_beta = 0.8,
+               gaming_control = np.inf,
                label_fn = None,
-               rng = None,
                burnin = 10,
                epsilon_greedy = False,
                initial_epsilon_prob = 0.7,
@@ -317,9 +317,13 @@ class RobustJury(NaiveJury):
         epsilon_greedy=epsilon_greedy,
         initial_epsilon_prob=initial_epsilon_prob,
         decay_steps=decay_steps,
-        epsilon_prob_decay_rate=epsilon_prob_decay_rate,
-        env_initial_params=env_initial_params,
-        rng=rng)
+        epsilon_prob_decay_rate=epsilon_prob_decay_rate)
+
+    self._group_cost = group_cost
+    self._subsidize = subsidize
+    self._subsidy_beta = subsidy_beta
+    self._gaming_control = gaming_control
+
     if burnin < 2:
       raise ValueError(
           'This agent expects a longer burnin period, to work as expected.')
@@ -352,15 +356,15 @@ class RobustJury(NaiveJury):
     """
     # Change in utility / cost = max score change
     # Change in utility = (1 - epsilon) * 1
-    cost_a = self._env_initial_params.group_cost[0]
-    cost_b = self._env_initial_params.group_cost[1]
+    cost_a = self._group_cost[0]
+    cost_b = self._group_cost[1]
     eps = self._get_epsilon_prob()
-    if self._env_initial_params.subsidize:
-      cost_b *= self._env_initial_params.subsidy_beta
-    if self._env_initial_params.gaming_control == np.inf:
+    if self._subsidize:
+      cost_b *= self._subsidy_beta
+    if self._gaming_control == np.inf:
       return [(1 - eps) / cost_a, (1 - eps) / cost_b]
     else:
       return [
-          np.min(((1 - eps) / cost_a, self._env_initial_params.gaming_control)),
-          np.min(((1 - eps) / cost_b, self._env_initial_params.gaming_control))
+          np.min(((1 - eps) / cost_a, self._gaming_control)),
+          np.min(((1 - eps) / cost_b, self._gaming_control))
       ]

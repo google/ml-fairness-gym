@@ -41,7 +41,7 @@ by the dynamic_rate * number of units allocated.
 ### Agent
 
 **Proportional Agent**: The proportional agent described in the paper is an
-instantiation of the probability_matching_agents.MLEProbabilityMatchingAgent.
+instantiation of the allocation_agents.MLEProbabilityMatchingAgent.
 
 This agent uses MLE to estimate the underlying incident rate of each location,
 r<sub>k</sub>, with a censored Poisson function as the likelihood function. At
@@ -52,7 +52,7 @@ to be uniformly 1/k for all k and with probability it sets p<sub>k</sub> to
 be proportional to r<sub>k</sub>.
 
 **Uniform Agent**: The uniform agent described in the paper is an instantiation
-of the test_util.DummyAgent.
+of the random_agents.RandomAgent.
 
 This agent samples randomly from the action space. Since the action space for
 the attention allocation environment is a Multinomial space, it acts by drawing

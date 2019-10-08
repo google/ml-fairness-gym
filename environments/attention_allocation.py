@@ -118,7 +118,7 @@ def _sample_incidents(rng, params):
 
   Args:
     rng: A numpy RandomState() object acting as a random number generator.
-    params: A AttrDict of parameters for this environment.
+    params: A Params instance for this environment.
 
   Returns:
     incidents_occurred: a list of integers of number of incidents for each
@@ -146,7 +146,7 @@ def _get_location_features(params, rng, incidents_occurred):
   and covariances.
 
   Args:
-    params: A AttrDict of parameters for this environment.
+    params: A Params instance for this environment.
     rng: A numpy RandomState() object acting as a random number generator.
     incidents_occurred: A list of integers of number of incidents for each
       location that occurred.

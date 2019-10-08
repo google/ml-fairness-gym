@@ -111,8 +111,7 @@ class BaseLendingEnv(core.FairnessEnv):
   In each step, the agent decides whether to accept or reject an
   application.
 
-  The base class is abstract. Inheriting classes should implement staticmethods
-  _sample_features, _update_params and set some default_params.
+  The base class is abstract.
   """
 
   metadata = {'render.modes': ['human']}

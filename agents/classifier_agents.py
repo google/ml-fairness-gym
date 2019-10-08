@@ -141,22 +141,30 @@ class ScoringAgent(core.Agent):
   frozen = attr.ib(default=False)  # type: bool
   action_space = attr.ib(
       factory=lambda: gym.spaces.Discrete(2))  # type: gym.Space
+  rng = attr.ib(factory=np.random.RandomState)  # type: np.random.RandomState
+
+  global_threshold = attr.ib(default=0.)
+  group_specific_thresholds = attr.ib(factory=dict)
+  global_threshold_history = attr.ib(factory=list)
+  group_specific_threshold_history = attr.ib(
+      factory=lambda: collections.defaultdict(list))
 
   _step = attr.ib(default=0)
   _last_action = attr.ib(default=None)
   _training_corpus = attr.ib(factory=TrainingCorpus)
 
   # Maintain a global threshold if group-specific thresholds are not available.
-  _global_threshold = attr.ib(default=0.)
-  _group_specific_thresholds = attr.ib(factory=dict)
+
   _last_observation = attr.ib(default=None)
   _last_action = attr.ib(default=None)
 
   def _act_impl(self, observation, reward, done):
+    self.global_threshold_history.append(self.global_threshold)
+    for group, thresh in self.group_specific_thresholds.items():
+      self.group_specific_threshold_history[group].append(thresh)
 
-    if self._last_action is not None and self._last_observation is not None:
-      self._record_training_example(self._last_observation, self._last_action,
-                                    reward)
+    self._record_training_example(self._last_observation, self._last_action,
+                                  reward)
 
     if self._step < self.params.burnin:
       action = self.params.default_action_fn()
@@ -172,7 +180,7 @@ class ScoringAgent(core.Agent):
         group_id = tuple(group_id)
       features = self._get_features(observation)
       score = self._score_transform([features])[0]
-      action = int(score > self._get_threshold(group_id))
+      action = int(score >= self._get_threshold(group_id))
 
     self._last_observation = observation
     self._last_action = action
@@ -203,15 +211,14 @@ class ScoringAgent(core.Agent):
     self._set_thresholds(training_corpus)
 
   def _set_thresholds(self, training_corpus):
-    self._global_threshold = threshold_policies.single_threshold(
-        predictions=self._score_transform(
-            training_corpus.get_features()),
+    self.global_threshold = threshold_policies.single_threshold(
+        predictions=self._score_transform(training_corpus.get_features()),
         labels=training_corpus.get_labels(),
         weights=None,
         cost_matrix=self.params.cost_matrix)
 
     if self.params.threshold_policy == threshold_policies.ThresholdPolicy.EQUALIZE_OPPORTUNITY:
-      self._group_specific_thresholds = (
+      self.group_specific_thresholds = (
           threshold_policies.equality_of_opportunity_thresholds(
               group_predictions=self._recursively_apply_score_transform(
                   training_corpus.get_features(
@@ -224,7 +231,7 @@ class ScoringAgent(core.Agent):
   def _get_threshold(self, group_id):
     # Try to get a group specific threshold but fall back to the global
     # threshold if not available.
-    return self._group_specific_thresholds.get(group_id, self._global_threshold)
+    return self.group_specific_thresholds.get(group_id, self.global_threshold)
 
   def _recursively_apply_score_transform(self, features):
     if isinstance(features, dict):
@@ -235,6 +242,9 @@ class ScoringAgent(core.Agent):
     return self._score_transform(features)
 
   def _record_training_example(self, observation, action, reward):
+    if action is None or observation is None:
+      return
+
     self._training_corpus.add(
         TrainingExample(
             observation=observation,
@@ -252,8 +262,8 @@ class ScoringAgent(core.Agent):
     raise NotImplementedError
 
   def debug_string(self):
-    return "My thresholds are %s and %s" % (self._global_threshold,
-                                            self._group_specific_thresholds)
+    return "My thresholds are %s and %s" % (self.global_threshold,
+                                            self.group_specific_thresholds)
 
 
 class ThresholdAgent(ScoringAgent):

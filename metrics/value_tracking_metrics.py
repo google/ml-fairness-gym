@@ -24,10 +24,12 @@ from __future__ import print_function
 import collections
 from typing import Callable, Dict, Optional, Text, Any
 import core
+import gin
 import numpy as np
 from six.moves import zip
 
 
+@gin.configurable
 class SummingMetric(core.Metric):
   """Metric that sums a state variable.
 
@@ -65,6 +67,7 @@ class SummingMetric(core.Metric):
                   0)
 
 
+@gin.configurable
 class AggregatorMetric(core.Metric):
   """Metric that modifies and aggregates an env state variable.
 
@@ -142,6 +145,7 @@ class AggregatorMetric(core.Metric):
     return sum_aggregate_result
 
 
+@gin.configurable
 class ValueChange(core.Metric):
   """Metric that returns how much a value has changed over the experiment."""
 
@@ -177,6 +181,7 @@ class ValueChange(core.Metric):
     return delta
 
 
+@gin.configurable
 class FinalValueMetric(core.Metric):
   """Metric that returns the final value of a `State` variable."""
 

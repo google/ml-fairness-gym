@@ -32,8 +32,8 @@ import os
 
 from absl import app
 from absl import flags
-import test_util
-from agents import probability_matching_agents
+from agents import allocation_agents
+from agents import random_agents
 from environments import attention_allocation
 from examples import attention_allocation_experiment
 from examples import attention_allocation_experiment_plotting
@@ -84,7 +84,7 @@ def uniform_agent_resource_all_dynamics():
 
   dynamic_values_to_test = [0.0, 0.01, 0.05, 0.1, 0.15]
   experiment = _setup_experiment()
-  experiment.agent_class = test_util.DummyAgent
+  experiment.agent_class = random_agents.RandomAgent
 
   reports_dict = {}
 
@@ -108,8 +108,8 @@ def mle_agent_epsilon_1_resource_all_dynamics():
   """Run experiments on a greedy-epsilon mle agent, epsilon=0.1, across dynamics."""
   dynamic_values_to_test = [0.0, 0.01, 0.05, 0.1, 0.15]
   experiment = _setup_experiment()
-  experiment.agent_class = probability_matching_agents.MLEProbabilityMatchingAgent
-  experiment.agent_params = probability_matching_agents.MLEProbabilityMatchingAgentParams(
+  experiment.agent_class = allocation_agents.MLEProbabilityMatchingAgent
+  experiment.agent_params = allocation_agents.MLEProbabilityMatchingAgentParams(
   )
   experiment.agent_params.burn_steps = 25
   experiment.agent_params.window = 100
@@ -136,8 +136,8 @@ def mle_agent_epsilon_5_resource_all_dynamics():
   """Run experiments on a greedy-epsilon mle agent, epsilon=0.6, across dynamics."""
   dynamic_values_to_test = [0.0, 0.01, 0.05, 0.1, 0.15]
   experiment = _setup_experiment()
-  experiment.agent_class = probability_matching_agents.MLEProbabilityMatchingAgent
-  experiment.agent_params = probability_matching_agents.MLEProbabilityMatchingAgentParams(
+  experiment.agent_class = allocation_agents.MLEProbabilityMatchingAgent
+  experiment.agent_params = allocation_agents.MLEProbabilityMatchingAgentParams(
   )
   experiment.agent_params.burn_steps = 25
   experiment.agent_params.epsilon = 0.5
@@ -174,6 +174,13 @@ def main(argv):
   dataframe = attention_allocation_experiment_plotting.create_dataframe_from_results(
       agent_names, [uniform_reports, mle1_reports, mle5_reports])
 
+  loc_dataframe = attention_allocation_experiment_plotting.create_dataframe_from_results(
+      agent_names, [uniform_reports, mle1_reports, mle5_reports],
+      separate_locations=True)
+
+  attention_allocation_experiment_plotting.plot_discovered_missed_clusters(
+      loc_dataframe,
+      os.path.join(FLAGS.output_dir, 'dynamic_rate_across_agents_locations'))
   attention_allocation_experiment_plotting.plot_total_miss_discovered(
       dataframe, os.path.join(FLAGS.output_dir, 'dynamic_rate_across_agents'))
   attention_allocation_experiment_plotting.plot_occurence_action_single_dynamic(
