@@ -243,8 +243,8 @@ class Params(core.Params):
           intercluster_vec=[1, -1],
           default_likelihoods=[0.8, 0.2],
           # Only one group is present here.
-          group=[1])  # type: distributions.Distribution
-  )
+          group=[1])
+  )  # type: distributions.Distribution
 
   num_groups = attr.ib(default=1)  # type: int
   min_observation = attr.ib(default=-2.)  # type: float

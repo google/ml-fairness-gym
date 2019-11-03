@@ -29,7 +29,9 @@ from __future__ import print_function
 import bisect
 import enum
 
+import attr
 import numpy as np
+import scipy.optimize
 from six.moves import zip
 from sklearn import metrics as sklearn_metrics
 
@@ -40,44 +42,82 @@ class ThresholdPolicy(enum.Enum):
   EQUALIZE_OPPORTUNITY = "equalize_opportunity"
 
 
-def _reward(fpr, tpr, num_positive, num_negative, cost_matrix):
-  """Reward at a (false positive rate, true positive rate) pair.
+@attr.s
+class RandomizedThreshold(object):
+  """Represents a distribution over decision thresholds."""
+  values = attr.ib(factory=lambda: [0.])
+  weights = attr.ib(factory=lambda: [1.])
+  rng = attr.ib(factory=np.random.RandomState)
+
+  def smoothed_value(self):
+    # If one weight is small, this is probably an optimization artifact.
+    # Snap to a single threshold.
+    if len(self.weights) == 2 and min(self.weights) < 1e-4:
+      return self.values[np.argmax(self.weights)]
+    return np.dot(self.weights, self.values)
+
+  def sample(self):
+    return self.rng.choice(self.values, p=self.weights)
+
+  def iteritems(self):
+    return zip(self.weights, self.values)
+
+
+def _threshold_from_tpr(roc, tpr_target, rng):
+  """Returns a `RandomizedThreshold` that achieves `tpr_target`.
+
+  For an arbitrary value of tpr_target in [0, 1], there may not be a single
+  threshold that achieves that tpr_value on our data. In this case, we
+  interpolate between the two closest achievable points on the discrete ROC
+  curve.
+
+  See e.g., Theorem 1 of Scott et al (1998)
+  "Maximum realisable performance: a principled method for enhancing
+  performance by using multiple classifiers in variable cost problem domains"
+  http://mi.eng.cam.ac.uk/reports/svr-ftp/auto-pdf/Scott_tr320.pdf
 
   Args:
-    fpr: False positive rate.
-    tpr: True positive rate.
-    num_positive: Number of positively labeled examples.
-    num_negative: Number of negatively labeled examples.
-    cost_matrix: A CostMatrix
-  Returns:
-    A scalar reward.
+    roc: A tuple (fpr, tpr, thresholds) as returned by sklearn's roc_curve
+      function.
+    tpr_target: A float between [0, 1], the target value of TPR that we would
+      like to achieve.
+    rng: A `np.RandomState` object that will be used in the returned
+      RandomizedThreshold.
+
+  Return:
+    A RandomizedThreshold that achieves the target TPR value.
   """
-  tn = (1 - fpr) * num_negative
-  tp = tpr * num_positive
-  fn = (1 - tpr) * num_positive
-  fp = fpr * num_negative
-  confusion_counts = np.array([tn, fp, fn, tp]).reshape((2, 2))
-  # Elementwise multiplication.
-  return np.multiply(confusion_counts, cost_matrix.as_array()).sum()
+  _, tpr_list, thresh_list = roc
+  idx = bisect.bisect_left(tpr_list, tpr_target)
+
+  # TPR target is larger than any of the TPR values in the list. In this case,
+  # take the highest threshold possible.
+  if idx == len(tpr_list):
+    return RandomizedThreshold(weights=[1], values=[thresh_list[-1]], rng=rng)
+
+  # TPR target is exactly achievable by an existing threshold. In this case,
+  # do not randomize between two different thresholds. Use a single threshold
+  # with probability 1.
+  if tpr_list[idx] == tpr_target:
+    return RandomizedThreshold(weights=[1], values=[thresh_list[idx]], rng=rng)
+
+  # Interpolate between adjacent thresholds.
+  # TODO() May be better to search over all pairs using a convex
+  # hull formulation.
+  alpha = _interpolate(x=tpr_target, low=tpr_list[idx - 1], high=tpr_list[idx])
+  return RandomizedThreshold(
+      weights=[alpha, 1 - alpha],
+      values=[thresh_list[idx - 1], thresh_list[idx]],
+      rng=rng)
 
 
-def _reward_at_tpr(roc, tpr_target, num_positive, num_negative,
-                   cost_matrix):
-  """Calculate the reward at a fixed true positive rate.
-
-  Args:
-    roc: A tuple of lists (fprs, tprs, thresholds) that are the output of
-      sklearn_metrics.roc_curve.
-    tpr_target: True positive rate target to match.
-    num_positive: Number of positively labeled examples.
-    num_negative: Number of negatively labeled examples.
-    cost_matrix: A CostMatrix.
-  Returns:
-    A scalar reward.
-  """
-  fpr, tpr, _ = roc
-  idx = bisect.bisect_left(tpr, tpr_target)
-  return _reward(fpr[idx], tpr[idx], num_positive, num_negative, cost_matrix)
+def _interpolate(x, low, high):
+  """returns a such that a*low + (1-a)*high = x."""
+  assert low <= x <= high, ("x is not between [low, high]: Expected %s <= %s <="
+                            " %s") % (low, x, high)
+  alpha = 1 - ((x - low) / (high - low))
+  assert np.abs(alpha * low + (1 - alpha) * high - x) < 1e-6
+  return alpha
 
 
 def single_threshold(predictions, labels, weights, cost_matrix):
@@ -89,18 +129,21 @@ def single_threshold(predictions, labels, weights, cost_matrix):
     weights: A list of instance weights.
     cost_matrix: A CostMatrix.
 
-
   Returns:
     A single threshold that maximizes reward.
   """
-  return equality_of_opportunity_thresholds({"dummy": predictions},
-                                            {"dummy": labels},
-                                            {"dummy": weights},
-                                            cost_matrix)["dummy"]
+  threshold = equality_of_opportunity_thresholds({"dummy": predictions},
+                                                 {"dummy": labels},
+                                                 {"dummy": weights},
+                                                 cost_matrix)["dummy"]
+  return threshold.smoothed_value()
 
 
-def equality_of_opportunity_thresholds(group_predictions, group_labels,
-                                       group_weights, cost_matrix):
+def equality_of_opportunity_thresholds(group_predictions,
+                                       group_labels,
+                                       group_weights,
+                                       cost_matrix,
+                                       rng=None):
   """Finds thresholds that equalize opportunity while maximizing reward.
 
   Using the definition from "Equality of Opportunity in Supervised Learning" by
@@ -121,7 +164,7 @@ def equality_of_opportunity_thresholds(group_predictions, group_labels,
     group_weights: A dict mapping from group identifiers to weights for
       instances from that group.
     cost_matrix: A CostMatrix.
-
+    rng: A `np.random.RandomState`.
 
   Returns:
     A dict mapping from group identifiers to thresholds such that recall is
@@ -135,45 +178,56 @@ def equality_of_opportunity_thresholds(group_predictions, group_labels,
   if set(group_predictions.keys()) != set(group_labels.keys()):
     raise ValueError("group_predictions and group_labels have mismatched keys.")
 
-  groups = set(group_predictions.keys())
+  if rng is None:
+    rng = np.random.RandomState()
+
+  groups = sorted(group_predictions.keys())
   roc = {}
-  thresholds = {}
 
-  # num_positive, num_negative store the number of examples with ground_truth
-  # positive, negative labels per group.
-  num_positive = {}
-  num_negative = {}
-  feasible_tpr = []
+  if group_weights is None:
+    group_weights = {}
+
   for group in groups:
-    labels = group_labels[group]
-
-    if group_weights is None or group_weights[group] is None:
+    if group not in group_weights or group_weights[group] is None:
       # If weights is unspecified, use equal weights.
-      weights = [1 for _ in labels]
-    else:
-      weights = group_weights[group]
+      group_weights[group] = [1 for _ in group_labels[group]]
 
-    num_positive[group] = sum(
-        weight for weight, label in zip(weights, labels) if label)
-    num_negative[group] = sum(
-        weight for weight, label in zip(weights, labels) if not label)
-    predictions = group_predictions[group]
-    fpr, tpr, thresh = sklearn_metrics.roc_curve(labels, predictions,
-                                                 sample_weight=weights)
-    roc[group] = (fpr, tpr, thresh)
-    feasible_tpr.extend(tpr)
+    assert len(group_labels[group]) == len(group_weights[group]) == len(
+        group_predictions[group])
 
-  # Compute a reward for each potential tpr value.
-  reward = {}
-  for tpr_target in feasible_tpr:
-    reward[tpr_target] = sum(
-        _reward_at_tpr(roc[group], tpr_target, num_positive[group],
-                       num_negative[group], cost_matrix)
-        for group in groups)
+    fprs, tprs, thresholds = sklearn_metrics.roc_curve(
+        y_true=group_labels[group],
+        y_score=group_predictions[group],
+        sample_weight=group_weights[group])
 
-  best_tpr, _ = max(list(reward.items()), key=lambda x: x[1])
+    roc[group] = (fprs, np.nan_to_num(tprs), thresholds)
 
-  for group, (_, tpr, thresh) in roc.items():
-    idx = bisect.bisect_left(tpr, best_tpr)
-    thresholds[group] = thresh[idx]
-  return thresholds
+  def negative_reward(tpr_target):
+    """Returns negative reward suitable for optimization by minimization."""
+
+    my_reward = 0
+    for group in groups:
+      weights_ = []
+      predictions_ = []
+      labels_ = []
+      for thresh_prob, threshold in _threshold_from_tpr(
+          roc[group], tpr_target, rng=rng).iteritems():
+        labels_.extend(group_labels[group])
+        for weight, prediction in zip(group_weights[group],
+                                      group_predictions[group]):
+          weights_.append(weight * thresh_prob)
+          predictions_.append(prediction >= threshold)
+      confusion_matrix = sklearn_metrics.confusion_matrix(
+          labels_, predictions_, sample_weight=weights_)
+
+      my_reward += np.multiply(confusion_matrix, cost_matrix.as_array()).sum()
+    return -my_reward
+
+  opt = scipy.optimize.minimize_scalar(
+      negative_reward,
+      bounds=[0, 1],
+      method="bounded",
+      options={"maxiter": 100})
+  return ({
+      group: _threshold_from_tpr(roc[group], opt.x, rng=rng) for group in groups
+  })

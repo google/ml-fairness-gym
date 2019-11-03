@@ -29,9 +29,11 @@ import multiprocessing
 import attr
 import core
 import run_util
+from agents import allocation_agents
+from environments import attention_allocation
 from metrics import value_tracking_metrics
 import numpy as np
-from typing import Any, Callable, List, Mapping, Optional, Text, Tuple
+from typing import Callable, Optional
 
 
 class RatioMetric(core.Metric):
@@ -89,47 +91,45 @@ class WeightedRatioMetric(core.Metric):
 class Experiment(object):
   """An encapsulation of an ML fairness gym experiment."""
   # The number of workers to run simulations - if 1, don't parallelize.
-  num_workers = attr.ib(default=1)  # type: int
+  num_workers = attr.ib(default=1)
 
   # The number of times to run the simulation
-  num_runs = attr.ib(default=50)  # type: int
+  num_runs = attr.ib(default=50)
 
   # The number of steps to simulate.
-  num_steps = attr.ib(default=100)  # type: int
+  num_steps = attr.ib(default=100)
 
   # Random seed.
-  seed = attr.ib(default=0)  # type: int
+  seed = attr.ib(default=0)
 
   # Random seed for agent.
-  agent_seed = attr.ib(default=50)  # type: int
+  agent_seed = attr.ib(default=50)
 
   # Parameterization of the environment.
-  env_params = attr.ib(factory=core.Params)  # type: core.Params
+  env_params = attr.ib(factory=attention_allocation.Params)
 
   # Parameterization of the agent.
-  agent_params = attr.ib(factory=core.Params)  # type: core.Params
+  agent_params = attr.ib(factory=core.Params)
 
   # Environment class to for this experiment.
-  env_class = attr.ib(default=core.FairnessEnv)  # type: Type[core.FairnessEnv]
+  env_class = attr.ib(default=attention_allocation.LocationAllocationEnv)
 
   # Agent class for this experiment.
-  agent_class = attr.ib(default=core.Agent)  # type: Type[core.Agent]
+  agent_class = attr.ib(default=allocation_agents.AllocationAgent)
 
   # Environment's relevant history.
-  history = attr.ib(
-      factory=lambda: [])  # type: List[Tuple[np.ndarray, np.ndarray]]
+  history = attr.ib(factory=lambda: [])
 
   def build_scenario(self):
     """Instantiates and returns an environment, agent pair."""
     env = self.env_class(self.env_params)
 
     if self.agent_class.__name__ == 'RandomAgent':
-      agent = self.agent_class(
-          env.action_space, None, env.observation_space)
+      agent = self.agent_class(env.action_space, None, env.observation_space)
     else:
       agent = self.agent_class(
           action_space=env.action_space,
-          reward_fn=lambda x: 0,
+          reward_fn=None,
           observation_space=env.observation_space,
           params=self.agent_params)
     agent.seed(self.agent_seed)
@@ -226,8 +226,7 @@ def run(experiment):
   return report(experiment, named_metric_results)
 
 
-def report(experiment,
-           named_metric_results):
+def report(experiment, named_metric_results):
   """Report results as a json string."""
   return core.to_json({
       'metrics': named_metric_results,

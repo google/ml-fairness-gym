@@ -27,6 +27,7 @@ from typing import Any, Callable, List, Mapping, Optional, Text, TypeVar
 from absl import logging
 import attr
 import core
+import rewards
 from spaces import multinomial
 import gym
 import numpy as np
@@ -111,12 +112,18 @@ class AllocationAgent(core.Agent):
   and _allocate(n_resource, beliefs).
   """
 
-  def __init__(self, action_space,
-               reward_fn, observation_space,
-               params):
+  def __init__(self,
+               action_space,
+               reward_fn,
+               observation_space,
+               params = None):
 
     super(AllocationAgent, self).__init__(action_space, reward_fn,
                                           observation_space)
+    if reward_fn is None:
+      reward_fn = rewards.NullReward()
+    if params is None:
+      params = AllocationAgentParams()
     self.params = params
     self._n_bins = len(action_space.nvec)
 

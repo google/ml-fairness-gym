@@ -40,7 +40,11 @@ def _one_hot(idx, vecsize=10):
 
 def _example_builder():
   return classifier_agents.TrainingExample(
-      observation={'my_feature': 'a'}, features='a', label=0, action=1)
+      observation={'my_feature': 'a'},
+      features='a',
+      label=0,
+      action=1,
+      weight=3.14)
 
 
 class TrainingCorpusTest(absltest.TestCase):
@@ -68,6 +72,17 @@ class TrainingCorpusTest(absltest.TestCase):
     # Check that all examples are labeled
     for example in filtered_corpus.examples:
       self.assertTrue(example.is_labeled())
+
+  def test_get_weights(self):
+    corpus = classifier_agents.TrainingCorpus()
+    for idx in range(10):
+      example = _example_builder()
+      if idx % 2:
+        example.label = None
+      corpus.add(example)
+    self.assertSameElements(corpus.get_weights(), {3.14})
+    for weights in corpus.get_weights(stratify_by='my_feature').values():
+      self.assertSameElements(weights, {3.14})
 
 
 class ThresholdAgentTest(absltest.TestCase):
@@ -155,12 +170,14 @@ class ThresholdAgentTest(absltest.TestCase):
         threshold_policy=threshold_policies.ThresholdPolicy.EQUALIZE_OPPORTUNITY
     )
 
+    rng = np.random.RandomState(100)
+
     agent = classifier_agents.ThresholdAgent(
         observation_space=observation_space,
         reward_fn=rewards.BinarizedScalarDeltaReward('x'),
-        params=params)
+        params=params,
+        rng=rng)
 
-    rng = np.random.RandomState(100)
     # Train over the whole range of observations. Expect slightly different
     # thresholds to be learned.
     for observation in rng.rand(100):
@@ -185,12 +202,6 @@ class ThresholdAgentTest(absltest.TestCase):
                 'group': np.array([group])
             },
                       done=False))
-
-    for group, action_list in actions.items():
-      # All actions are {0, 1}
-      self.assertSameElements(action_list, {0, 1})
-      # Actions are sorted - i.e., 0s followed by 1s.
-      self.assertSequenceEqual(action_list, sorted(action_list))
 
     # The two groups are classified with different policies so they are not
     # exactly equal.

@@ -345,6 +345,10 @@ class InfectiousDiseaseEnv(core.FairnessEnv):
       self.step(None)
     return super(InfectiousDiseaseEnv, self).reset()
 
+  def set_initial_health_state(self, initial_health_state):
+    """Set the initial health state that will be used on next reset."""
+    self.initial_params.initial_health_state = initial_health_state
+
 
 @gin.configurable
 def build_si_model(

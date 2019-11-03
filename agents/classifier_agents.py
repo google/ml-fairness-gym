@@ -40,6 +40,7 @@ class TrainingExample(object):
   features = attr.ib()  # type: Any
   label = attr.ib()  # type: Optional[int]
   action = attr.ib()  # type: Optional[int]
+  weight = attr.ib(default=1.0)  # type: float
 
   def is_labeled(self):
     return self.label is not None
@@ -99,6 +100,26 @@ class TrainingCorpus(object):
       stratified_labels[tuple(example.observation.get(stratify_by))].append(
           example.label)
     return stratified_labels
+
+  def get_weights(
+      self,
+      stratify_by=None):
+    """Returns weights of the training examples.
+
+    Args:
+      stratify_by: observation key to stratify by.
+
+    Returns:
+      If stratify is None, returns a list of weights. Otherwise a dictionary
+      of lists of weights where the keys are the values of the stratify_by key.
+    """
+    if stratify_by is None:
+      return [example.weight for example in self.examples]
+    stratified_weights = collections.defaultdict(list)
+    for example in self.examples:
+      stratified_weights[tuple(example.observation.get(stratify_by))].append(
+          example.weight)
+    return stratified_weights
 
 
 @attr.s
@@ -214,7 +235,7 @@ class ScoringAgent(core.Agent):
     self.global_threshold = threshold_policies.single_threshold(
         predictions=self._score_transform(training_corpus.get_features()),
         labels=training_corpus.get_labels(),
-        weights=None,
+        weights=training_corpus.get_weights(),
         cost_matrix=self.params.cost_matrix)
 
     if self.params.threshold_policy == threshold_policies.ThresholdPolicy.EQUALIZE_OPPORTUNITY:
@@ -225,13 +246,17 @@ class ScoringAgent(core.Agent):
                       stratify_by=self.params.group_key)),
               group_labels=training_corpus.get_labels(
                   stratify_by=self.params.group_key),
-              group_weights=None,
-              cost_matrix=self.params.cost_matrix))
+              group_weights=training_corpus.get_weights(
+                  stratify_by=self.params.group_key),
+              cost_matrix=self.params.cost_matrix,
+              rng=self.rng))
 
   def _get_threshold(self, group_id):
     # Try to get a group specific threshold but fall back to the global
     # threshold if not available.
-    return self.group_specific_thresholds.get(group_id, self.global_threshold)
+    if group_id in self.group_specific_thresholds:
+      return self.group_specific_thresholds[group_id].sample()
+    return self.global_threshold
 
   def _recursively_apply_score_transform(self, features):
     if isinstance(features, dict):
