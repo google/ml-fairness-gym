@@ -201,6 +201,7 @@ def equality_of_opportunity_thresholds(group_predictions,
         sample_weight=group_weights[group])
 
     roc[group] = (fprs, np.nan_to_num(tprs), thresholds)
+    # roc[group] = (np.nan_to_num(fprs), np.nan_to_num(tprs), thresholds)
 
   def negative_reward(tpr_target):
     """Returns negative reward suitable for optimization by minimization."""
