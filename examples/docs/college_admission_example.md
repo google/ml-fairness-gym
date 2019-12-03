@@ -100,7 +100,7 @@ contexts, even if the agent is not designed to anticipate strategic manipulation
 To run the experiments for the college admissions scenario to recreate the plots
 from the KDD 2019 paper [4] run the following command:
 
-`python examples/college_admissions_main --num_steps=750 --burnin=10
+`python examples/college_admissions_main.py --num_steps=750 --burnin=10
 --epsilon_greedy=False --verbose=True --noisy_dist='gaussian'
 --noisy_features=False --noisy_threshold=False --feature_mu='0.5','0.5'
 --output_dir="path/to/output_dir/kdd"`

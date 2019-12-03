@@ -56,7 +56,7 @@ over the course of the simulation. Precision and Recall stratified by group.
 
 ## Interpreting the plots
 
-Running examples/lending_experiment_main.py reproduces the plots for the KDD
+Running examples/lending_experiments_main.py reproduces the plots for the KDD
 workshop paper [3].
 
 The cumulative loans given to each group are plotted over the course of the

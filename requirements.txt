@@ -12,3 +12,7 @@ simplejson
 sklearn
 statsmodels
 tqdm
+
+gin-config==0.1.1
+mock
+scikit-learn==0.20.2  # better not to use 0.19.1
