@@ -12,3 +12,6 @@ simplejson
 sklearn
 statsmodels
 tqdm
+
+gin-config==0.1.1
+mock
