@@ -20,7 +20,7 @@ from __future__ import print_function
 
 from absl.testing import absltest
 import runner_lib
-from examples import college_admission_util
+from experiments import college_admission_util
 import gin
 import mock
 
@@ -75,7 +75,7 @@ class CollegeAdmissionUtilTest(absltest.TestCase):
     referred to in college_admission_config.gin configuration file.
     """
     gin.parse_config_file(
-        'third_party/py/fairness_gym/examples/config/'
+        'third_party/py/fairness_gym/experiments/config/'
         'college_admission_config.gin')
     runner = runner_lib.Runner()
     runner.run()

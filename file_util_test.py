@@ -13,32 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Lint as: python2, python3
-"""Tests for lending.py."""
+# Lint as: python3
+"""Tests for file_util."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 from absl.testing import absltest
-from examples import lending
-import simplejson as json
+import file_util
 
 
-class LendingExampleTest(absltest.TestCase):
+class UtilitiesTest(absltest.TestCase):
 
-  def test_experiment_runs_with_default_parameters(self):
-    # Tests that the experiment can run.
-    result = lending.Experiment(num_steps=100).run()
-    # Tests that the result is a valid json string.
-    result = json.loads(result)
+  def test_makedirs(self):
+    test_root = self.create_tempdir().full_path
+    file_util.makedirs('%s/my/multilevel/directory' % test_root)
+    self.assertTrue(file_util.exists('%s/my/multilevel/directory' % test_root))
 
-  def test_short_run_recall_is_perfect(self):
-    # Run for fewer steps than the burnin - this should give 100% recall
-    # since during the burnin period, all loans are accepted.
-    result = lending.Experiment(num_steps=10).run()
-    result = json.loads(result)
-    self.assertEqual(result['metric_results']['recall'], {'0': 1.0, '1': 1.0})
+  def test_read_write_files(self):
+    test_root = self.create_tempdir().full_path
+    with file_util.open('%s/hello.txt' % test_root, 'w') as outfile:
+      outfile.write('hello!')
+
+    with file_util.open('%s/hello.txt' % test_root, 'r') as readfile:
+      self.assertEqual(readfile.read(), 'hello!')
 
 
 if __name__ == '__main__':

@@ -15,6 +15,7 @@ This is not an officially supported Google product.
 * [Quick start guide](docs/quickstart.md)
 * [Frequently asked questions](docs/FAQ.md)
 * [Using ML-fairness-gym](docs/using_ml_fairness_gym.md)
+* [Using the configurable runner](docs/using_runner.md)
 * Environments
     * [College Admission](examples/docs/college_admission_example.md)
     * [Lending](examples/docs/lending_example.md)

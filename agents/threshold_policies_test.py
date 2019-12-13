@@ -102,6 +102,44 @@ class ThresholdPoliciesTest(absltest.TestCase):
         predictions, labels, weights, vanilla_cost_matrix)
     self.assertAlmostEqual(weighted_threshold, 0.75)
 
+  def test_convex_hull_roc(self):
+
+    # The ROC curve for the test looks like this.
+    # 'o' marks the points that should be deleted.
+    #
+    #             /
+    #            /
+    #   ____o   /
+    #  /     \o/
+    # /
+    ##################
+
+    fpr_tpr = [
+        (0.0, 0.0),
+        (0.2, 0.5),
+        (0.3, 0.5),  # This point should be removed: Not in convex hull.
+        (0.4, 0.1),  # This point should be removed: Below random-guessing line.
+        (0.5, 0.7),
+        (1.0, 1.0),
+    ]
+
+    expected_fpr_tpr = [
+        (0.0, 0.0),
+        (0.2, 0.5),
+        (0.5, 0.7),
+        (1.0, 1.0),
+    ]
+
+    fpr, tpr = zip(*fpr_tpr)
+    expected_fpr, expected_tpr = zip(*expected_fpr_tpr)
+    np.random.seed(100)
+    # Thresholds don't really matter here, so they can be random.
+    thresholds = sorted([np.random.rand() for _ in fpr])
+    result_fpr, result_tpr, _ = threshold_policies.convex_hull_roc(
+        (list(fpr), list(tpr), thresholds))
+    self.assertListEqual(list(expected_fpr), result_fpr)
+    self.assertListEqual(list(expected_tpr), result_tpr)
+
 
 if __name__ == '__main__':
   absltest.main()

@@ -28,10 +28,11 @@ from __future__ import print_function
 
 import bisect
 import enum
-
+from absl import logging
 import attr
 import numpy as np
 import scipy.optimize
+import scipy.spatial
 from six.moves import zip
 from sklearn import metrics as sklearn_metrics
 
@@ -48,6 +49,7 @@ class RandomizedThreshold(object):
   values = attr.ib(factory=lambda: [0.])
   weights = attr.ib(factory=lambda: [1.])
   rng = attr.ib(factory=np.random.RandomState)
+  tpr_target = attr.ib(default=None)
 
   def smoothed_value(self):
     # If one weight is small, this is probably an optimization artifact.
@@ -61,6 +63,40 @@ class RandomizedThreshold(object):
 
   def iteritems(self):
     return zip(self.weights, self.values)
+
+
+def convex_hull_roc(roc):
+  """Returns an roc curve without the points inside the convex hull.
+
+  Points below the fpr=tpr line corresponding to random performance are also
+  removed.
+
+  Args:
+    roc: A tuple of lists that are all the same length, containing
+      (false_positive_rates, true_positive_rates, thresholds). This is the same
+      format returned by sklearn.metrics.roc_curve.
+  """
+  fprs, tprs, thresholds = roc
+  if np.isnan(fprs).any() or np.isnan(tprs).any():
+    logging.warning("Convex hull solver does not handle NaNs.")
+    return roc
+  if len(fprs) < 3:
+    logging.warning("Convex hull solver does not curves with < 3 points.")
+    return roc
+  try:
+    # Add (fpr=1, tpr=0) to the convex hull to remove any points below the
+    # random-performance line.
+    hull = scipy.spatial.ConvexHull(np.vstack([fprs + [1], tprs + [0]]).T)
+  except scipy.spatial.qhull.QhullError:
+    logging.exception("Convex hull solver failed.")
+    return roc
+  verticies = set(hull.vertices)
+
+  return (
+      [fpr for idx, fpr in enumerate(fprs) if idx in verticies],
+      [tpr for idx, tpr in enumerate(tprs) if idx in verticies],
+      [thresh for idx, thresh in enumerate(thresholds) if idx in verticies],
+  )
 
 
 def _threshold_from_tpr(roc, tpr_target, rng):
@@ -83,32 +119,35 @@ def _threshold_from_tpr(roc, tpr_target, rng):
       like to achieve.
     rng: A `np.RandomState` object that will be used in the returned
       RandomizedThreshold.
-
-  Return:
-    A RandomizedThreshold that achieves the target TPR value.
+  Return: A RandomizedThreshold that achieves the target TPR value.
   """
-  _, tpr_list, thresh_list = roc
+  # First filter out points that are not on the convex hull.
+  _, tpr_list, thresh_list = convex_hull_roc(roc)
+
   idx = bisect.bisect_left(tpr_list, tpr_target)
 
   # TPR target is larger than any of the TPR values in the list. In this case,
   # take the highest threshold possible.
   if idx == len(tpr_list):
-    return RandomizedThreshold(weights=[1], values=[thresh_list[-1]], rng=rng)
+    return RandomizedThreshold(
+        weights=[1], values=[thresh_list[-1]], rng=rng, tpr_target=tpr_target)
 
   # TPR target is exactly achievable by an existing threshold. In this case,
   # do not randomize between two different thresholds. Use a single threshold
   # with probability 1.
   if tpr_list[idx] == tpr_target:
-    return RandomizedThreshold(weights=[1], values=[thresh_list[idx]], rng=rng)
+    return RandomizedThreshold(
+        weights=[1], values=[thresh_list[idx]], rng=rng, tpr_target=tpr_target)
 
-  # Interpolate between adjacent thresholds.
-  # TODO() May be better to search over all pairs using a convex
-  # hull formulation.
+  # Interpolate between adjacent thresholds. Since we are only considering
+  # points on the convex hull of the roc curve, we only need to consider
+  # interpolating between pairs of adjacent points.
   alpha = _interpolate(x=tpr_target, low=tpr_list[idx - 1], high=tpr_list[idx])
   return RandomizedThreshold(
       weights=[alpha, 1 - alpha],
       values=[thresh_list[idx - 1], thresh_list[idx]],
-      rng=rng)
+      rng=rng,
+      tpr_target=tpr_target)
 
 
 def _interpolate(x, low, high):

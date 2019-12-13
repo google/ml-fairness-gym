@@ -66,3 +66,27 @@ class CumulativeLoans(core.Metric):
       # Multiplying by action makes a row of all zeros if the loan was rejected.
       result.append(np.array(state.group) * history_item.action)
     return np.cumsum(result, 0).T
+
+
+class CumulativeRecall(core.Metric):
+  """Returns the recall aggregated up to time T."""
+
+  def measure(self, env):
+    """Returns an array of size (num_groups) x (num_steps).
+
+    Cell (i, j) contains the recall up to time j for group i.
+
+    Args:
+      env: The environment to be measured.
+    """
+
+    history = self._extract_history(env)
+    numerator = []
+    denominator = []
+    for history_item in history:
+      state = history_item.state  # type: lending.State
+      numerator.append(
+          np.array(state.group) * history_item.action *
+          (1 - state.will_default))
+      denominator.append(np.array(state.group) * (1 - state.will_default))
+    return (np.cumsum(numerator, 0) / np.cumsum(denominator, 0)).T

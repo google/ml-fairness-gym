@@ -11,4 +11,7 @@ seaborn
 simplejson
 sklearn
 statsmodels
+tensorflow==1.15
 tqdm
+dopamine-rl
+atari-py

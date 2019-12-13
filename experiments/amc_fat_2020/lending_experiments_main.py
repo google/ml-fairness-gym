@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Code to recreate plots for the KDD workshop paper, Fairness is not Static.
+"""Code to recreate plots for lending experiments.
 
-This code creates the plots for the lending section of the paper.
+Code to recreate the recall-gap plot can be found in
+aggregate_lending_recall_values.py
 """
 
 from __future__ import absolute_import
@@ -29,19 +30,39 @@ import os
 from absl import app
 from absl import flags
 from absl import logging
-from examples import lending
+import file_util
+from experiments import lending
+from experiments import lending_plots
 
 
-flags.DEFINE_string('plotting_dir', '/tmp/plots',
+flags.DEFINE_string('plotting_dir', '/tmp/fairness_gym/lending_plots',
                     'Path location to store plots.')
 flags.DEFINE_integer('num_steps', 20000, 'Number of steps to run experiments.')
 flags.DEFINE_integer('seed', 200, 'Random seed.')
+flags.DEFINE_float('cluster_shift_increment', 0.01, 'Inverse population size.')
+
 
 FLAGS = flags.FLAGS
 
 
-MAX_UTIL_TITLE = 'Max Utility'
-EQ_OPP_TITLE = 'Eq. Opportunity'
+DELAYED_IMPACT_CLUSTER_PROBS = (
+    (0.0, 0.1, 0.1, 0.2, 0.3, 0.3, 0.0),
+    (0.1, 0.1, 0.2, 0.3, 0.3, 0.0, 0.0),
+)
+
+AMC_FAT_2020_PLOTS = frozenset({
+    lending_plots.PlotTypes.CREDIT_DISTRIBUTIONS,
+    lending_plots.PlotTypes.CUMULATIVE_LOANS,
+    lending_plots.PlotTypes.THRESHOLD_HISTORY,
+    lending_plots.PlotTypes.MEAN_CREDIT_OVER_TIME,
+    lending_plots.PlotTypes.CUMULATIVE_RECALLS,
+})
+
+
+DELAYED_IMPACT_CLUSTER_PROBS = (
+    (0.0, 0.1, 0.1, 0.2, 0.3, 0.3, 0.0),
+    (0.1, 0.1, 0.2, 0.3, 0.3, 0.0, 0.0),
+)
 
 
 def main(argv):
@@ -49,18 +70,20 @@ def main(argv):
     raise app.UsageError('Too many command-line arguments.')
 
   plotting_dir = os.path.join(FLAGS.plotting_dir, '%d' % FLAGS.seed)
-  os.makedirs(plotting_dir)
-  lending.plot_steady_state_distribution(plotting_dir)
+  file_util.makedirs(plotting_dir)
+  lending_plots.plot_steady_state_distribution(plotting_dir)
 
   experiment_fn = functools.partial(
       lending.Experiment,
+      cluster_probabilities=DELAYED_IMPACT_CLUSTER_PROBS,
       group_0_prob=0.5,
       interest_rate=1.0,
       bank_starting_cash=10000,
       seed=FLAGS.seed,
       num_steps=FLAGS.num_steps,
-      burnin=200,
-      cluster_shift_increment=0.01,
+      # No need for burn in since the agent is an oracle agent.
+      burnin=1,
+      cluster_shift_increment=FLAGS.cluster_shift_increment,
       include_cumulative_loans=True,
       return_json=False)
 
@@ -77,43 +100,20 @@ def main(argv):
   # plotting.
   equality_of_opportunity_result = experiment_fn(
       threshold_policy=lending.EQUALIZE_OPPORTUNITY).run()
+  # The static experiment removes the delayed effects of defaulting on future
+  # credit scores.
+  static_equality_of_opportunity_result = experiment_fn(
+      threshold_policy=lending.EQUALIZE_OPPORTUNITY,
+      cluster_shift_increment=0).run()
   maximize_reward_result = experiment_fn(
       threshold_policy=lending.MAXIMIZE_REWARD).run()
 
-  lending.plot_credit_distribution(
-      maximize_reward_result['metric_results']['initial_credit_distribution'],
-      'Initial',
-      path=os.path.join(plotting_dir, 'initial.pdf'))
-  lending.plot_credit_distribution(
-      maximize_reward_result['metric_results']['final_credit_distributions'],
-      title=MAX_UTIL_TITLE,
-      path=os.path.join(plotting_dir, 'max_utility.pdf'))
-  lending.plot_credit_distribution(
-      equality_of_opportunity_result['metric_results']
-      ['final_credit_distributions'],
-      title=EQ_OPP_TITLE,
-      path=os.path.join(plotting_dir, 'equalize_opportunity.pdf'))
-
-  cumulative_loans = {
-      'max reward':
-          maximize_reward_result['metric_results']['cumulative_loans'],
-      'equal-opp':
-          equality_of_opportunity_result['metric_results']['cumulative_loans']
-  }
-  lending.plot_cumulative_loans(
-      cumulative_loans, os.path.join(plotting_dir, 'cumulative_loans.pdf'))
-  logging.info('Maxutil agent: %s', maximize_reward_result['agent'])
-  logging.info('Equalized opportunity agent: %s',
-               equality_of_opportunity_result['agent'])
-
-  logging.info('Equality of opportunity recall: %s',
-               equality_of_opportunity_result['metric_results']['recall'])
-  logging.info('Maxutil recall: %s',
-               maximize_reward_result['metric_results']['recall'])
-  logging.info('Equality of opportunity profit rate: %s',
-               equality_of_opportunity_result['metric_results']['profit rate'])
-  logging.info('Maxutil profit rate: %s',
-               maximize_reward_result['metric_results']['profit rate'])
+  lending_plots.do_plotting(
+      maximize_reward_result,
+      equality_of_opportunity_result,
+      static_equality_of_opportunity_result,
+      plotting_dir,
+      options=AMC_FAT_2020_PLOTS)
 
 
 if __name__ == '__main__':

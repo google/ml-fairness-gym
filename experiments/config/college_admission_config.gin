@@ -1,9 +1,9 @@
-import fairness_gym.agents.college_admission_jury
-import fairness_gym.environments.college_admission
-import fairness_gym.examples.college_admission_util
-import fairness_gym.metrics.error_metrics
-import fairness_gym.metrics.value_tracking_metrics
-import fairness_gym.runner_lib
+import agents.college_admission_jury
+import environments.college_admission
+import experiments.college_admission_util
+import metrics.error_metrics
+import metrics.value_tracking_metrics
+import runner_lib
 
 # Configure the runner.
 Runner.num_steps = 3000

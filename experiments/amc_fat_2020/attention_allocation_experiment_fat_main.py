@@ -15,7 +15,7 @@
 
 """Main file to run attention allocation experiments.
 
-This file replicates experiments done for the KDD workshop paper
+This file replicates experiments done for the AMC FAT* paper
 "Fairness is Not Static".
 
 Note this file can take a significant amount of time to run all experiments
@@ -32,11 +32,11 @@ import os
 
 from absl import app
 from absl import flags
+import test_util
 from agents import allocation_agents
-from agents import random_agents
 from environments import attention_allocation
-from examples import attention_allocation_experiment
-from examples import attention_allocation_experiment_plotting
+from experiments import attention_allocation_experiment
+from experiments import attention_allocation_experiment_plotting
 import numpy as np
 
 FLAGS = flags.FLAGS
@@ -48,8 +48,8 @@ def _get_base_env_params():
   return attention_allocation.Params(
       n_locations=5,
       prior_incident_counts=(500, 500, 500, 500, 500),
-      incident_rates=[2.3, 1.1, 1.8, .6, .3],
-      n_attention_units=4,
+      incident_rates=[8, 6, 4, 3, 1.5],
+      n_attention_units=6,
       miss_incident_prob=(0., 0., 0., 0., 0.),
       extra_incident_prob=(0., 0., 0., 0., 0.),
       dynamic_rate=0.0)
@@ -79,12 +79,13 @@ def _print_discovered_missed_incidents_report(value, report):
               missed_incidents))
 
 
-def uniform_agent_resource_all_dynamics():
-  """Run experiments on a uniform agent across dynamic rates."""
-
+def mle_greedy_alpha5_agent_resource_all_dynamics():
+  """Run experiments on a greedy-epsilon mle agent, epsilon=0.1, across dynamics."""
   dynamic_values_to_test = [0.0, 0.01, 0.05, 0.1, 0.15]
   experiment = _setup_experiment()
-  experiment.agent_class = random_agents.RandomAgent
+  experiment.agent_class = allocation_agents.MLEGreedyAgent
+  experiment.agent_params = allocation_agents.MLEGreedyAgentParams(
+      burn_steps=25, window=100, alpha=0.75)
 
   reports_dict = {}
 
@@ -94,9 +95,60 @@ def uniform_agent_resource_all_dynamics():
     json_report = attention_allocation_experiment.run(experiment)
     report = json.loads(json_report)
 
-    print('\n\nUniform Random Agent, 4 attention units')
+    print('\n\nMLE Greedy Fair Agent, 6 attention units, alpha=0.75')
     _print_discovered_missed_incidents_report(value, report)
-    output_filename = 'uniform_4units_%f.json' % value
+    output_filename = 'mle_greedy_fair_alpha75_6units_%f.json' % value
+    with open(os.path.join(FLAGS.output_dir, output_filename), 'w') as f:
+      json.dump(report, f)
+
+    reports_dict[value] = json_report
+  return reports_dict
+
+
+def mle_greedy_agent_resource_all_dynamics():
+  """Run experiments on a greedy-epsilon mle agent, epsilon=0.1, across dynamics."""
+  dynamic_values_to_test = [0.0, 0.01, 0.05, 0.1, 0.15]
+  experiment = _setup_experiment()
+  experiment.agent_class = allocation_agents.MLEGreedyAgent
+  experiment.agent_params = allocation_agents.MLEGreedyAgentParams(
+      burn_steps=25, window=100)
+
+  reports_dict = {}
+
+  for value in dynamic_values_to_test:
+    print('Running an experiment...')
+    experiment.env_params.dynamic_rate = value
+    json_report = attention_allocation_experiment.run(experiment)
+    report = json.loads(json_report)
+
+    print('\n\nMLE Greedy Agent, 6 attention units')
+    _print_discovered_missed_incidents_report(value, report)
+    output_filename = 'mle_greedy_6units_%f.json' % value
+    with open(os.path.join(FLAGS.output_dir, output_filename), 'w') as f:
+      json.dump(report, f)
+
+    reports_dict[value] = json_report
+  return reports_dict
+
+
+def uniform_agent_resource_all_dynamics():
+  """Run experiments on a uniform agent across dynamic rates."""
+
+  dynamic_values_to_test = [0.0, 0.01, 0.05, 0.1, 0.15]
+  experiment = _setup_experiment()
+  experiment.agent_class = test_util.DummyAgent
+
+  reports_dict = {}
+
+  for value in dynamic_values_to_test:
+    print('Running an experiment...')
+    experiment.env_params.dynamic_rate = value
+    json_report = attention_allocation_experiment.run(experiment)
+    report = json.loads(json_report)
+
+    print('\n\nUniform Random Agent, 6 attention units')
+    _print_discovered_missed_incidents_report(value, report)
+    output_filename = 'uniform_6units_%f.json' % value
     with open(os.path.join(FLAGS.output_dir, output_filename), 'w') as f:
       json.dump(report, f)
 
@@ -122,9 +174,9 @@ def mle_agent_epsilon_1_resource_all_dynamics():
     json_report = attention_allocation_experiment.run(experiment)
     report = json.loads(json_report)
 
-    print('\n\nMLE Agent, 4 attention units, epsilon=0.1')
+    print('\n\nMLE Agent, 6 attention units, epsilon=0.1')
     _print_discovered_missed_incidents_report(value, report)
-    output_filename = 'mle_epsilon.1_4units_%f.json' % value
+    output_filename = 'mle_epsilon.1_6units_%f.json' % value
     with open(os.path.join(FLAGS.output_dir, output_filename), 'w') as f:
       json.dump(report, f)
 
@@ -150,9 +202,9 @@ def mle_agent_epsilon_5_resource_all_dynamics():
     json_report = attention_allocation_experiment.run(experiment)
     report = json.loads(json_report)
 
-    print('\n\nMLE Agent, 4 attention units, epsilon=0.5')
+    print('\n\nMLE Agent, 6 attention units, epsilon=0.5')
     _print_discovered_missed_incidents_report(value, report)
-    output_filename = 'mle_epsilon.5_4units_%f.json' % value
+    output_filename = 'mle_epsilon.5_6units_%f.json' % value
     with open(os.path.join(FLAGS.output_dir, output_filename), 'w') as f:
       json.dump(report, f)
 
@@ -164,25 +216,50 @@ def main(argv):
   if len(argv) > 1:
     raise app.UsageError('Too many command-line arguments.')
 
+  greedy_fair_reports = mle_greedy_alpha5_agent_resource_all_dynamics()
+  greedy_reports = mle_greedy_agent_resource_all_dynamics()
   uniform_reports = uniform_agent_resource_all_dynamics()
   mle1_reports = mle_agent_epsilon_1_resource_all_dynamics()
   mle5_reports = mle_agent_epsilon_5_resource_all_dynamics()
 
   agent_names = [
-      'uniform', 'proportional epsilon=0.1', 'proportional epsilon=0.5'
+      'purely greedy', 'greedy alpha=0.75', 'uniform',
+      'proportional epsilon=0.1', 'proportional epsilon=0.5'
   ]
   dataframe = attention_allocation_experiment_plotting.create_dataframe_from_results(
-      agent_names, [uniform_reports, mle1_reports, mle5_reports])
+      agent_names, [
+          greedy_reports, greedy_fair_reports, uniform_reports, mle1_reports,
+          mle5_reports
+      ])
 
   loc_dataframe = attention_allocation_experiment_plotting.create_dataframe_from_results(
-      agent_names, [uniform_reports, mle1_reports, mle5_reports],
+      agent_names, [
+          greedy_reports, greedy_fair_reports, uniform_reports, mle1_reports,
+          mle5_reports
+      ],
       separate_locations=True)
 
   attention_allocation_experiment_plotting.plot_discovered_missed_clusters(
       loc_dataframe,
       os.path.join(FLAGS.output_dir, 'dynamic_rate_across_agents_locations'))
+
   attention_allocation_experiment_plotting.plot_total_miss_discovered(
       dataframe, os.path.join(FLAGS.output_dir, 'dynamic_rate_across_agents'))
+
+  attention_allocation_experiment_plotting.plot_discovered_occurred_ratio_locations(
+      loc_dataframe,
+      os.path.join(FLAGS.output_dir, 'discovered_to_occurred_locations'))
+
+  attention_allocation_experiment_plotting.plot_discovered_occurred_ratio_range(
+      dataframe, os.path.join(FLAGS.output_dir, 'discovered_to_occurred_range'))
+
+  attention_allocation_experiment_plotting.plot_occurence_action_single_dynamic(
+      json.loads(greedy_reports[0.1]),
+      os.path.join(FLAGS.output_dir, 'greedy_incidents_actions_over_time'))
+  attention_allocation_experiment_plotting.plot_occurence_action_single_dynamic(
+      json.loads(greedy_fair_reports[0.1]),
+      os.path.join(FLAGS.output_dir, 'greedy_fair_incidents_actions_over_time'))
+
   attention_allocation_experiment_plotting.plot_occurence_action_single_dynamic(
       json.loads(uniform_reports[0.1]),
       os.path.join(FLAGS.output_dir, 'uniform_incidents_actions_over_time'))

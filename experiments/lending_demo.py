@@ -24,7 +24,7 @@ import os
 from absl import app
 from absl import flags
 from agents import threshold_policies
-from examples import lending
+from experiments import lending
 import matplotlib.pyplot as plt
 import numpy as np
 import simplejson as json

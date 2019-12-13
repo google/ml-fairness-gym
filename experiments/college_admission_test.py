@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Lint as: python2, python3
-"""Tests for fairness_gym.examples.college_admission."""
+"""Tests for fairness_gym.experiments.college_admission."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,7 +24,7 @@ import json
 
 from absl.testing import absltest
 import params
-from examples import college_admission
+from experiments import college_admission
 
 import numpy as np
 

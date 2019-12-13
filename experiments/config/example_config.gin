@@ -1,5 +1,5 @@
-import fairness_gym.core
-import fairness_gym.test_util
+import core
+import test_util
 
 Runner.env_class = @test_util.DummyEnv
 Runner.env_params_class = @core.Params

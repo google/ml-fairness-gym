@@ -37,6 +37,7 @@ import networkx as nx
 import numpy as np
 import simplejson as json
 
+
 # Values with associated with this key within dictionaries are given
 # special treatment as RandomState internals during JSON serialization /
 # deserialization.  This works around an issue where RandomState itself fails
@@ -261,12 +262,15 @@ class FairnessEnv(gym.Env):
   assert (not group_membership_var or
           (group_membership_var in observable_state_vars))
 
-  def __init__(self, params = None):
+  def __init__(self,
+               params = None,
+               initialize_observation_space = True):
     self.history = []  # type: HistoryType
     self.state = None  # type: Optional[State]
     self.reward_fn = None  # type: Optional[RewardFn]
 
-    self.observation_space = gym.spaces.Dict(self.observable_state_vars)
+    if initialize_observation_space:
+      self.observation_space = gym.spaces.Dict(self.observable_state_vars)
     # Copy params so if environment mutates params it is contained to this
     # environment instance.
     self.initial_params = copy.deepcopy(params)

@@ -22,7 +22,7 @@ from __future__ import print_function
 from absl.testing import absltest
 from agents import random_agents
 from environments import attention_allocation
-from examples import attention_allocation_experiment
+from experiments import attention_allocation_experiment
 import simplejson as json
 
 

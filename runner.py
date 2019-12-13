@@ -20,7 +20,7 @@ Example usage:
 bazel run -c opt third_party/py/fairness_gym:runner -- \
 --alsologtostderr \
 --gin_config_path=\
-third_party/py/fairness_gym/examples/config/example_config.gin \
+third_party/py/fairness_gym/experiments/config/experiments_config.gin \
 --output_path=/tmp/output.json
 
 After that finishes, /tmp/output.json should look like this:

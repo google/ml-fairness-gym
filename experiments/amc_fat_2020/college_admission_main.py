@@ -31,7 +31,7 @@ from absl import logging
 import attr
 import core
 import params
-from examples import college_admission
+from experiments import college_admission
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import numpy as np

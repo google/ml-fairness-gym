@@ -20,8 +20,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import flags
 import gin
 import tqdm
+
+
+FLAGS = flags.FLAGS
+
+flags.DEFINE_boolean("use_tqdm", True,
+                     "Use tqdm to visually represent progress in simulations.")
 
 
 @gin.configurable
@@ -48,7 +55,9 @@ def run_simulation(env, agent, metrics, num_steps, seed=100, agent_seed=50):
   done = False
 
   print("Starting simulation")
-  for _ in tqdm.trange(num_steps):
+  simulation_iterator = tqdm.trange if FLAGS.use_tqdm else range
+
+  for _ in simulation_iterator(num_steps):
     action = agent.act(observation, done)
     # TODO(): Remove reward from this loop.
     observation, _, done, _ = env.step(action)
@@ -104,7 +113,8 @@ def run_stackelberg_simulation(env,
   action = agent.initial_action()
   done = False
   print("Starting simulation")
-  for _ in tqdm.trange(num_steps):
+  simulation_iterator = tqdm.trange if FLAGS.use_tqdm else range
+  for _ in simulation_iterator(num_steps):
     # TODO(): Remove reward from this loop.
     observation, _, done, _ = env.step(action)
     action = agent.act(observation, done)
