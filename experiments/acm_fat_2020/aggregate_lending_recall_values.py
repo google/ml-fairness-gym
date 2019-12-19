@@ -20,12 +20,12 @@ To recreate the recall-gap plot from the lending experiments in the paper,
 first run:
 
 for seed in {0..99}
-  experiments/amc_fat_2020/lending_experiments_main.py --seed=${seed}
+  experiments/acm_fat_2020/lending_experiments_main.py --seed=${seed}
 done
 
 Then run:
 
-experiments/amc_fat_2020/aggregate_lending_recall_values.py
+experiments/acm_fat_2020/aggregate_lending_recall_values.py
 """
 
 from __future__ import absolute_import

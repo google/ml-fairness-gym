@@ -238,3 +238,9 @@ def run_test_simulation(env=None,
                                         (step, action_a, action_b))
 
   return result
+
+# In keeping with the style of DummyEnv and DummyMetric, alias DummyAgent as
+# well.
+# pylint: disable=invalid-name
+DummyAgent = gin.external_configurable(
+    random_agents.RandomAgent, name='test_util.DummyAgent')

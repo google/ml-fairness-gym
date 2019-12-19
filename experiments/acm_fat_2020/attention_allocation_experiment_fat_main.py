@@ -15,7 +15,7 @@
 
 """Main file to run attention allocation experiments.
 
-This file replicates experiments done for the AMC FAT* paper
+This file replicates experiments done for the ACM FAT* paper
 "Fairness is Not Static".
 
 Note this file can take a significant amount of time to run all experiments

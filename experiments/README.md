@@ -9,8 +9,8 @@ scenarios.
 
 The experiments for the following papers are in matching folders:
 
-### amc_fat_2020/
+### acm_fat_2020/
 Alexander D’Amour, Yoni Halpern, Hansa Srinivasan, Pallavi Baljekar, James
 Atwood, D. Sculley. Fairness is not Static: Deeper Understanding of Long Term
-Fairness via Simulation Studies. AMC FAT* 2020.
+Fairness via Simulation Studies. ACM FAT* 2020.
 

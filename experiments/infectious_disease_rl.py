@@ -30,7 +30,7 @@ from dopamine.discrete_domains import run_experiment
 import core
 from experiments import infectious_disease as infectious_disease_exp
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 flags.DEFINE_string(
     'output_dir',

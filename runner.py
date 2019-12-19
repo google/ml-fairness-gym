@@ -17,10 +17,10 @@
 r"""A gin-configurable experiment runner for the fairness gym.
 
 Example usage:
-bazel run -c opt third_party/py/fairness_gym:runner -- \
+runner.py -- \
 --alsologtostderr \
 --gin_config_path=\
-third_party/py/fairness_gym/experiments/config/experiments_config.gin \
+path/to/fairness_gym/examples/config/example_config.gin \
 --output_path=/tmp/output.json
 
 After that finishes, /tmp/output.json should look like this:

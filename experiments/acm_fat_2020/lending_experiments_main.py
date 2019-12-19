@@ -50,7 +50,7 @@ DELAYED_IMPACT_CLUSTER_PROBS = (
     (0.1, 0.1, 0.2, 0.3, 0.3, 0.0, 0.0),
 )
 
-AMC_FAT_2020_PLOTS = frozenset({
+ACM_FAT_2020_PLOTS = frozenset({
     lending_plots.PlotTypes.CREDIT_DISTRIBUTIONS,
     lending_plots.PlotTypes.CUMULATIVE_LOANS,
     lending_plots.PlotTypes.THRESHOLD_HISTORY,
@@ -113,7 +113,7 @@ def main(argv):
       equality_of_opportunity_result,
       static_equality_of_opportunity_result,
       plotting_dir,
-      options=AMC_FAT_2020_PLOTS)
+      options=ACM_FAT_2020_PLOTS)
 
 
 if __name__ == '__main__':
