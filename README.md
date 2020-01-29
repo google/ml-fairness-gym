@@ -17,10 +17,10 @@ This is not an officially supported Google product.
 * [Using ML-fairness-gym](docs/using_ml_fairness_gym.md)
 * [Using the configurable runner](docs/using_runner.md)
 * Environments
-    * [College Admission](examples/docs/college_admission_example.md)
-    * [Lending](examples/docs/lending_example.md)
-    * [Attention Allocation](examples/docs/attention_allocation_example.md)
-* [Examples](examples/README.md)
+    * [College Admission](environments/college_admission.py)
+    * [Lending](experiments/lending.py)
+    * [Attention Allocation](experiments/attention_allocation_experiment.py)
+* [Examples](environments/README.md)
 
 
 # Contact us
