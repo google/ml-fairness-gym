@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2019 The ML Fairness Gym Authors.
+# Copyright 2020 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,11 +37,10 @@ class DistributionComparisonMetricsTest(absltest.TestCase):
     env = attention_allocation.LocationAllocationEnv(params)
     env = attention_allocation.LocationAllocationEnv(params)
     env.seed(100)
-    env.action_space.seed(100)
-    env.observation_space.seed(100)
     agent = random_agents.RandomAgent(env.action_space, None,
                                       env.observation_space)
 
+    agent.seed(100)
     observation = env.reset()
     done = False
     for _ in range(250):
@@ -69,10 +68,10 @@ class DistributionComparisonMetricsTest(absltest.TestCase):
     """Test confirms an error is raised when an actions are scalars."""
     env = test_util.DummyEnv()
     env.seed(100)
-    env.action_space.seed(100)
-    env.observation_space.seed(100)
+
     agent = random_agents.RandomAgent(env.action_space, None,
                                       env.observation_space)
+    agent.seed(100)
 
     observation = env.reset()
     done = False

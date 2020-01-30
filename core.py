@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2019 The ML Fairness Gym Authors.
+# Copyright 2020 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -279,8 +279,6 @@ class FairnessEnv(gym.Env):
       return observation.get(self.group_membership_var, DEFAULT_GROUP)
 
     self.group_identifier_fn = get_group_identifier  # type: Callable
-    self.group_space = self.observation_space.spaces.get(
-        self.group_membership_var, DEFAULT_GROUP_SPACE)
 
   def step(
       self,
@@ -539,6 +537,7 @@ class Agent(object):
     self.action_space = action_space
     self.reward_fn = reward_fn
     self.observation_space = observation_space
+    self.rng = np.random.RandomState()
 
   def initial_action(self):
     """Returns an action in action_space that is the initial default action."""
@@ -592,3 +591,9 @@ class Agent(object):
     rng, seed = seeding.np_random(value)
     self.rng = rng
     return [seed]
+
+  def sample_from(self, space):
+    """Sample from a space using the agent's own state."""
+    space = copy.deepcopy(space)
+    space.np_random = self.rng
+    return space.sample()

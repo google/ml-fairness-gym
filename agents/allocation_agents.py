@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2019 The ML Fairness Gym Authors.
+# Copyright 2020 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -418,7 +418,7 @@ class MLEProbabilityMatchingAgent(AllocationAgent):
     # With probability 1-epsilon, allocate according to belief.
     if self.rng.random_sample() < self.params.epsilon:
 
-      self.last_allocation = self.action_space.sample()
+      self.last_allocation = self.sample_from(self.action_space)
     else:
       self.last_allocation = _allocate_proportional_to_beliefs(
           self.rng, n_resource, beliefs)
@@ -560,7 +560,7 @@ class MLEGreedyAgent(MLEProbabilityMatchingAgent):
     # With probability epsilon allocate with uniform probability.
     # With probability 1-epsilon, allocate according to belief.
     if self.rng.binomial(1, self.params.epsilon):
-      self.last_allocation = self.action_space.sample()
+      self.last_allocation = self.sample_from(self.action_space)
     else:
       optimal_allocation = None
       max_expected_yield = 0

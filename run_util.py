@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2019 The ML Fairness Gym Authors.
+# Copyright 2020 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,6 +58,9 @@ def run_simulation(env, agent, metrics, num_steps, seed=100, agent_seed=50):
   simulation_iterator = tqdm.trange if FLAGS.use_tqdm else range
 
   for _ in simulation_iterator(num_steps):
+    # Update the agent with any changes to the observation or action space.
+    agent.action_space, agent.observation_space = (env.action_space,
+                                                   env.observation_space)
     action = agent.act(observation, done)
     # TODO(): Remove reward from this loop.
     observation, _, done, _ = env.step(action)
@@ -110,6 +113,7 @@ def run_stackelberg_simulation(env,
   env.seed(seed)
   agent.seed(agent_seed)
   _ = env.reset()
+  agent.action_space = env.action_space
   action = agent.initial_action()
   done = False
   print("Starting simulation")
@@ -117,6 +121,9 @@ def run_stackelberg_simulation(env,
   for _ in simulation_iterator(num_steps):
     # TODO(): Remove reward from this loop.
     observation, _, done, _ = env.step(action)
+    # Update the agent with any changes to the observation or action space.
+    agent.action_space, agent.observation_space = (env.action_space,
+                                                   env.observation_space)
     action = agent.act(observation, done)
     if done:
       break

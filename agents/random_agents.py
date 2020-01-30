@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2019 The ML Fairness Gym Authors.
+# Copyright 2020 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import copy
 import core
 import rewards
 import gin
@@ -47,8 +46,6 @@ class RandomAgent(core.Agent):
       default_action: The first action of the agent when no observation is
         given.
     """
-    # Avoid modifying the action space of the environment when we seed it.
-    action_space = copy.deepcopy(action_space)
     if reward_fn is None:
       reward_fn = rewards.NullReward()
     super(RandomAgent, self).__init__(action_space, reward_fn,
@@ -60,7 +57,7 @@ class RandomAgent(core.Agent):
     if self.default_action is not None:
       action = self.default_action
     else:
-      action = self.action_space.sample()
+      action = self.sample_from(self.action_space)
     if not self.action_space.contains(action):
       raise gym.error.InvalidAction('Invalid action: %s' % action)
     return action
@@ -87,7 +84,7 @@ class RandomAgent(core.Agent):
                                          observation)
 
     core.validate_reward(reward)
-    return self.action_space.sample()
-
-  def seed(self, value):
-    return self.action_space.seed(value)
+    # Use `_sample_from` so that the randomness comes from the agent's random
+    # state rather than the action_space's random_state may be changed by other
+    # parties.
+    return self.sample_from(self.action_space)

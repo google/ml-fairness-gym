@@ -7,7 +7,7 @@ Before you start, make sure you have followed the
 ## Running a simulation
 
 We will start with an example using the
-[lending environment](../examples/docs/lending_example.md).
+[lending environment](../environments/README.md).
 
 This environment plays out a simple simulation. There are 7 possible credit
 scores. If you have score i, there is a probability p(i) that you will pay back
@@ -37,7 +37,7 @@ metric to optimize).
 Run the following command to run a simulation:
 
 ```bash
-python examples/lending_demo.py --num_steps=5000
+python experiments/lending_demo.py --num_steps=5000
 ```
 
 Congratulations, you've run your first ML-fairness-gym simulation!
@@ -121,7 +121,7 @@ Try running the next command in a different console window so that you can
 compare the generated plots.
 
 ```console
-python examples/lending_demo.py --equalize_opportunity --num_steps=5000
+python experiments/lending_demo.py --equalize_opportunity --num_steps=5000
 ```
 
 A number of things have now changed.
@@ -171,5 +171,5 @@ there an even more profitable policy out there?
 ## Next steps
 
 There are lots of questions to explore in this environment. Take a look at
-examples/lending.py to see the experiment class. Try different parameters - or
-design an entirely new agent.
+experiments/lending.py to see the experiment class. Try different parameters -
+or design an entirely new agent.

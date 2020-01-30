@@ -14,3 +14,6 @@ Alexander D’Amour, Yoni Halpern, Hansa Srinivasan, Pallavi Baljekar, James
 Atwood, D. Sculley. Fairness is not Static: Deeper Understanding of Long Term
 Fairness via Simulation Studies. ACM FAT* 2020.
 
+
+
+The publications can be found in the [papers](../papers/) folder.

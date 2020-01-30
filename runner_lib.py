@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2019 The ML Fairness Gym Authors.
+# Copyright 2020 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ from typing import Any, Callable, Dict, Optional, Text, Type
 
 import attr
 import core
+import run_util
 import gin
-import tqdm
 
 
 @gin.configurable
@@ -52,32 +52,15 @@ def default_report(
 @gin.configurable
 def run_simulation(env, agent, metrics, num_steps):
   """Runs a single simulation and returns metrics."""
-  observation = env.reset()
-  done = False
-
-  for _ in tqdm.trange(num_steps):
-    action = agent.act(observation, done)
-    observation, _, done, _ = env.step(action)
-    if done:
-      break
-
-  return {name: metric.measure(env) for name, metric in metrics.items()}
+  return run_util.run_simulation(env, agent, metrics, num_steps)
 
 
 @gin.configurable
 def run_stackelberg_simulation(env, agent, metrics, num_steps):
   """Runs a single Stackelberg simulation and returns metrics."""
-  observation = env.reset()
-  done = False
 
-  action = agent.initial_action()
-  for _ in tqdm.trange(num_steps):
-    observation, _, done, _ = env.step(action)
-    action = agent.act(observation, done)
-    if done:
-      break
+  return run_util.run_stackelberg_simulation(env, agent, metrics, num_steps)
 
-  return {name: metric.measure(env) for name, metric in metrics.items()}
 
 # The type of a simulation function.  This is used to annotate the simulation_fn
 # attr of Runner.

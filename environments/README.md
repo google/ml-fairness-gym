@@ -6,8 +6,15 @@ An environment is code that simulates a scenario in which fairness consideration
 
 These environments are not meant to be realistic representations of the domain in question. While the insights one gains by working with an environment may be useful for designing systems for each of these domains, good performance in a gym environment should not be considered in any way sufficient for certifying performance in any real-world scenario.
 
-Background on environments:
+For background on the environments see the following papers:
 
-* [College Admission](../examples/docs/college_admission_example.md)
-* [Lending](../examples/docs/lending_example.md)
-* [Attention Allocation](../examples/docs/attention_allocation_example.md)
+[Fairness is not Static: Deeper Understanding of Long Term Fairness via Simulation Studies](../papers/acm_fat_2020_fairness_is_not_static.pdf)
+
+* College admissions
+* Lending
+* Attention allocation
+
+[Fair treatment allocations in social networks](../papers/fairmlforhealth2019_fair_treatment_allocations_in_social_networks.pdf)
+
+* Infectious disease
+

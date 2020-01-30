@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2019 The ML Fairness Gym Authors.
+# Copyright 2020 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,10 @@ import gin
 
 
 class RunnerLibTest(absltest.TestCase):
+
+  def setUp(self):
+    super(RunnerLibTest, self).setUp()
+    gin.clear_config()
 
   def test_configured_runner_takes_correct_number_of_steps(self):
     gin.parse_config("""
@@ -58,7 +62,7 @@ class RunnerLibTest(absltest.TestCase):
       Runner.env_class = None
       Runner.env_callable = None
     """)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       runner = runner_lib.Runner()
       runner.run()
 

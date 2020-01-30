@@ -16,11 +16,8 @@ This is not an officially supported Google product.
 * [Frequently asked questions](docs/FAQ.md)
 * [Using ML-fairness-gym](docs/using_ml_fairness_gym.md)
 * [Using the configurable runner](docs/using_runner.md)
-* Environments
-    * [College Admission](examples/docs/college_admission_example.md)
-    * [Lending](examples/docs/lending_example.md)
-    * [Attention Allocation](examples/docs/attention_allocation_example.md)
-* [Examples](examples/README.md)
+* [Environments](environments/README.md)
+* [Experiments](experiments/README.md)
 
 
 # Contact us
