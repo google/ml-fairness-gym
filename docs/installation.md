@@ -11,6 +11,8 @@ source ./bin/activate
 pip install -r requirements.txt
 ```
 
+Note that ML-fairness-gym should only be run with python 3.
+
 Run the following command to add ml-fairness-gym to your PYTHONPATH.
 
 ```shell

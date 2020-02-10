@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 from absl.testing import absltest
+from agents import allocation_agents
 from agents import random_agents
 from environments import attention_allocation
 from experiments import attention_allocation_experiment
@@ -68,6 +69,24 @@ class AttentionAllocationExperimentTest(absltest.TestCase):
     experiment.num_steps = 10
     experiment.num_runs = 5
     result = attention_allocation_experiment.run(experiment)
+    result = json.loads(result)
+
+  def test_MLEGreedyAgent_works(self):
+    experiment = _setup_experiment()
+    experiment.agent_class = allocation_agents.MLEGreedyAgent
+    experiment.agent_params = allocation_agents.MLEGreedyAgentParams(
+        burn_steps=5, window=10, alpha=5.0)
+    result = attention_allocation_experiment.run(experiment)
+    # Tests that the result is a valid json string.
+    result = json.loads(result)
+
+  def test_MLEProbabilityMatchingAgent_works(self):
+    experiment = _setup_experiment()
+    experiment.agent_class = allocation_agents.MLEProbabilityMatchingAgent
+    experiment.agent_params = allocation_agents.MLEProbabilityMatchingAgentParams(
+        burn_steps=25, window=100)
+    result = attention_allocation_experiment.run(experiment)
+    # Tests that the result is a valid json string.
     result = json.loads(result)
 
 

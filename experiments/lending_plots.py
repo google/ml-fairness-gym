@@ -54,7 +54,7 @@ class PlotTypes(enum.Enum):
 def _write(path):
   """Write a plot to a path."""
   if path:
-    plt.savefig(file_util.open(path, 'w'), format='pdf')
+    plt.savefig(file_util.open(path, 'w'), format='png')
 
 
 def _build_transition_matrix(success_probabilities):

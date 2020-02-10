@@ -72,7 +72,7 @@ class Params(core.Params):
   # pylint: disable=g-long-lambda
   group_cost = attr.ib(factory=lambda: {
       0: 0.8,
-      1: 1.2
+      1: 1.2  # pytype: disable=ignored-type-comment
   })  # type: Mapping[int, float]
   # pylint: enable=g-long-lambda
   gaming = attr.ib(default=True)  # type: bool

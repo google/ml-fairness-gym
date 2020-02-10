@@ -118,10 +118,10 @@ class AllocationAgent(core.Agent):
                observation_space,
                params = None):
 
-    super(AllocationAgent, self).__init__(action_space, reward_fn,
-                                          observation_space)
     if reward_fn is None:
       reward_fn = rewards.NullReward()
+    super(AllocationAgent, self).__init__(action_space, reward_fn,
+                                          observation_space)
     if params is None:
       params = AllocationAgentParams()
     self.params = params

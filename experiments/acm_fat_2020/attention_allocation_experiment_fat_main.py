@@ -32,8 +32,8 @@ import os
 
 from absl import app
 from absl import flags
-import test_util
 from agents import allocation_agents
+from agents import random_agents
 from environments import attention_allocation
 from experiments import attention_allocation_experiment
 from experiments import attention_allocation_experiment_plotting
@@ -136,7 +136,7 @@ def uniform_agent_resource_all_dynamics():
 
   dynamic_values_to_test = [0.0, 0.01, 0.05, 0.1, 0.15]
   experiment = _setup_experiment()
-  experiment.agent_class = test_util.DummyAgent
+  experiment.agent_class = random_agents.RandomAgent
 
   reports_dict = {}
 

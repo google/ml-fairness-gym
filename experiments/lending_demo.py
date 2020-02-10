@@ -25,6 +25,7 @@ from absl import app
 from absl import flags
 from agents import threshold_policies
 from experiments import lending
+from experiments import lending_plots
 import matplotlib.pyplot as plt
 import numpy as np
 import simplejson as json
@@ -69,7 +70,7 @@ def main(argv):
 
   # Standalone figure of initial credit distribution
   fig = plt.figure(figsize=(4, 4))
-  lending.plot_credit_distribution(
+  lending_plots.plot_credit_distribution(
       metrics['initial_credit_distribution'],
       'Initial',
       path=os.path.join(FLAGS.plots_directory,
@@ -81,7 +82,7 @@ def main(argv):
   # Initial and final credit distributions next to each other.
   fig = plt.figure(figsize=(8, 4))
   plt.subplot(1, 2, 1)
-  lending.plot_credit_distribution(
+  lending_plots.plot_credit_distribution(
       metrics['initial_credit_distribution'],
       'Initial',
       path=None,
@@ -89,7 +90,7 @@ def main(argv):
       figure=fig)
   plt.subplot(1, 2, 2)
 
-  lending.plot_credit_distribution(
+  lending_plots.plot_credit_distribution(
       metrics['final_credit_distributions'],
       'Final - %s' % title,
       path=os.path.join(FLAGS.plots_directory, 'final_credit_distribution.png')
@@ -98,7 +99,7 @@ def main(argv):
       figure=fig)
 
   fig = plt.figure()
-  lending.plot_bars(
+  lending_plots.plot_bars(
       metrics['recall'],
       title='Recall - %s' % title,
       path=os.path.join(FLAGS.plots_directory, 'recall.png')
@@ -106,7 +107,7 @@ def main(argv):
       figure=fig)
 
   fig = plt.figure()
-  lending.plot_bars(
+  lending_plots.plot_bars(
       metrics['precision'],
       title='Precision - %s' % title,
       ylabel='Precision',
@@ -115,7 +116,7 @@ def main(argv):
       figure=fig)
 
   fig = plt.figure()
-  lending.plot_cumulative_loans(
+  lending_plots.plot_cumulative_loans(
       {'demo - %s' % title: metrics['cumulative_loans']},
       path=os.path.join(FLAGS.plots_directory, 'cumulative_loans.png')
       if FLAGS.plots_directory else None,

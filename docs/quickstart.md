@@ -3,6 +3,7 @@
 Before you start, make sure you have followed the
 
 [installation instructions](installation.md).
+Note the ML-fairness-gym is only intended to run with python 3.
 
 ## Running a simulation
 

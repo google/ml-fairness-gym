@@ -41,7 +41,7 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
     agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
-        reward_fn=rewards.VectorSumReward('incidents_seen'),
+        reward_fn=None,
         params=agent_params)
     counts = [3, 6, 8]
     observation = np.array([1, 2, 0])
@@ -54,7 +54,7 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
     agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
-        reward_fn=rewards.VectorSumReward('incidents_seen'))
+        reward_fn=None)
     counts = [3, 6, 8]
     n_resource = 20
     n_samples = 100
@@ -72,7 +72,7 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
     agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
-        reward_fn=rewards.VectorSumReward('incidents_seen'))
+        reward_fn=None)
     counts = [0, 0, 0]
     n_resource = 15
     n_samples = 100
@@ -90,7 +90,7 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
     agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
-        reward_fn=rewards.VectorSumReward('incidents_seen'))
+        reward_fn=None)
     test_util.run_test_simulation(env=env, agent=agent)
 
   def test_get_added_vector_features(self):
@@ -113,7 +113,7 @@ class NaiveProbabilityMatchingAgentTest(absltest.TestCase):
     agent = allocation_agents.NaiveProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
-        reward_fn=rewards.VectorSumReward('incidents_seen'))
+        reward_fn=None)
     observation = env.reset()
     with self.assertRaises(core.EpisodeDoneError):
       agent.act(observation, done=True)
@@ -126,7 +126,7 @@ class MLEProbabilityMatchingAgentTest(absltest.TestCase):
     agent = allocation_agents.MLEProbabilityMatchingAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
-        reward_fn=rewards.VectorSumReward('incidents_seen'),
+        reward_fn=None,
         params=None)
     test_util.run_test_simulation(env=env, agent=agent)
 
@@ -173,7 +173,7 @@ class MLEGreedyAgentTest(absltest.TestCase):
     agent = allocation_agents.MLEGreedyAgent(
         action_space=env.action_space,
         observation_space=env.observation_space,
-        reward_fn=rewards.VectorSumReward('incidents_seen'))
+        reward_fn=None)
     test_util.run_test_simulation(env=env, agent=agent)
 
   def test_allocate_beliefs_fair_unsatisfiable(self):
