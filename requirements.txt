@@ -1,5 +1,7 @@
 absl-py
+atari-py
 attrs
+dopamine-rl
 gin-config
 gym
 matplotlib
@@ -8,12 +10,10 @@ more_itertools
 networkx
 numpy
 pandas
+recsim
 seaborn
 simplejson
 sklearn
 statsmodels
 tensorflow==1.15
 tqdm
-dopamine-rl
-atari-py
-recsim
