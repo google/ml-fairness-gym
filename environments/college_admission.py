@@ -112,8 +112,8 @@ class State(core.State):
   test_scores_y = attr.ib(factory=list)  # type: List[float]
   individual_burden = attr.ib(factory=list)  # type: List[float]
   decision_threshold = attr.ib(default=0)  # type: Optional[float]
-  selected_applicants = attr.ib(factory=list)  # type: np.ndarray
-  selected_ground_truth = attr.ib(factory=list)  # type: np.ndarray
+  selected_applicants = attr.ib(factory=list)  # type: np.ndarray  # pytype: disable=annotation-type-mismatch
+  selected_ground_truth = attr.ib(factory=list)  # type: np.ndarray  # pytype: disable=annotation-type-mismatch
   num_manipulated = attr.ib(default=0)  # type: int
 
 

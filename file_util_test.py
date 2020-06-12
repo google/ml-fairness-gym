@@ -31,6 +31,13 @@ class UtilitiesTest(absltest.TestCase):
     file_util.makedirs('%s/my/multilevel/directory' % test_root)
     self.assertTrue(file_util.exists('%s/my/multilevel/directory' % test_root))
 
+  def test_delete_recursively(self):
+    test_root = self.create_tempdir().full_path
+    file_util.makedirs('%s/my/favorite/multilevel/directory' % test_root)
+    file_util.delete_recursively('%s/my/favorite' % test_root)
+    self.assertTrue(file_util.exists('%s/my' % test_root))
+    self.assertFalse(file_util.exists('%s/my/favorite' % test_root))
+
   def test_read_write_files(self):
     test_root = self.create_tempdir().full_path
     with file_util.open('%s/hello.txt' % test_root, 'w') as outfile:

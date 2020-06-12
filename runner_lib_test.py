@@ -34,11 +34,11 @@ class RunnerLibTest(absltest.TestCase):
 
   def test_configured_runner_takes_correct_number_of_steps(self):
     gin.parse_config("""
-      Runner.env_class = @test_util.DummyEnv
-      Runner.agent_class = @random_agents.RandomAgent
-      Runner.num_steps = 10
-      Runner.seed = 1337
-      Runner.metric_classes = {"num_steps": @test_util.DummyMetric}
+      runner_lib.Runner.env_class = @test_util.DummyEnv
+      runner_lib.Runner.agent_class = @random_agents.RandomAgent
+      runner_lib.Runner.num_steps = 10
+      runner_lib.Runner.seed = 1337
+      runner_lib.Runner.metric_classes = {"num_steps": @test_util.DummyMetric}
     """)
     runner = runner_lib.Runner()
     results = runner.run()
@@ -46,12 +46,12 @@ class RunnerLibTest(absltest.TestCase):
 
   def test_configured_parametrized_runner_takes_correct_number_of_steps(self):
     gin.parse_config("""
-      Runner.env_class = @test_util.DummyEnv
-      Runner.env_params_class = @core.Params
-      Runner.agent_class = @random_agents.RandomAgent
-      Runner.num_steps = 10
-      Runner.seed = 1234
-      Runner.metric_classes = {"num_steps": @test_util.DummyMetric}
+      runner_lib.Runner.env_class = @test_util.DummyEnv
+      runner_lib.Runner.env_params_class = @core.Params
+      runner_lib.Runner.agent_class = @random_agents.RandomAgent
+      runner_lib.Runner.num_steps = 10
+      runner_lib.Runner.seed = 1234
+      runner_lib.Runner.metric_classes = {"num_steps": @test_util.DummyMetric}
     """)
     runner = runner_lib.Runner()
     results = runner.run()
@@ -59,8 +59,8 @@ class RunnerLibTest(absltest.TestCase):
 
   def test_environment_underspecification_raises(self):
     gin.parse_config("""
-      Runner.env_class = None
-      Runner.env_callable = None
+      runner_lib.Runner.env_class = None
+      runner_lib.Runner.env_callable = None
     """)
     with self.assertRaises(TypeError):
       runner = runner_lib.Runner()

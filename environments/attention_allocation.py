@@ -57,7 +57,7 @@ class Params(core.Params):
   n_locations = attr.ib(default=2)  # type: int
 
   # Prior counts of incidents for each location.
-  prior_incident_counts = attr.ib(default=(650, 250))  # type: Tuple[int]
+  prior_incident_counts = attr.ib(default=(650, 250))  # type: Tuple[int, ...]
   # Incident rates for each location.
   incident_rates = attr.ib(factory=lambda: [4., 3.])  # type: List[float]
   # Discovered incidents weight - weights how many incidents are discovered
@@ -74,9 +74,9 @@ class Params(core.Params):
   attention_replacement = attr.ib(default=False)  # type: bool
   # Probability an incident is missed by an attention unit for each location.'
 
-  miss_incident_prob = attr.ib(default=(0.2, 0.2))  # type: Tuple[float]
+  miss_incident_prob = attr.ib(default=(0.2, 0.2))  # type: Tuple[float, ...]
   # Probability an incident is falsely reported without being discovered.
-  extra_incident_prob = attr.ib(default=(0.0, 0.0))  # type: Tuple[float]
+  extra_incident_prob = attr.ib(default=(0.0, 0.0))  # type: Tuple[float, ...]
   # The rate at which the incident_rates change in response to allocation
   # of attention units.
   dynamic_rate = attr.ib(default=0.0)  # type: float

@@ -241,9 +241,26 @@ over the long term.
 
 Please cite:
 
-Alexander D’Amour, Yoni Halpern, Hansa Srinivasan, Pallavi Baljekar, James
-Atwood, D. Sculley. Fairness is not Static: Deeper understanding of long term
-fairness via agents and environments. KDD workshop on Explainable AI (XAI) 2019.
+Alexander D’Amour, Yoni Halpern, Hansa Srinivasan, Pallavi Baljekar, James Atwood, D. Sculley. Fairness is not Static: Deeper Understanding of Long Term Fairness via Simulation Studies. ACM FAccT 2020.
+
+```shell
+@inproceedings{fairness_gym,
+author = {D’Amour, Alexander and Srinivasan, Hansa and Atwood, James and Baljekar, Pallavi and Sculley, D. and Halpern, Yoni},
+title = {Fairness is Not Static: Deeper Understanding of Long Term Fairness via Simulation Studies},
+year = {2020},
+isbn = {9781450369367},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3351095.3372878},
+doi = {10.1145/3351095.3372878},
+booktitle = {Proceedings of the 2020 Conference on Fairness, Accountability, and Transparency},
+pages = {525–534},
+numpages = {10},
+location = {Barcelona, Spain},
+series = {FAccT ’20}
+}
+```
+
 
 ## How do I report bugs?
 

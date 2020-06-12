@@ -15,18 +15,17 @@
 
 # Lint as: python3
 """Helper functions for working with different file systems."""
-
-from __future__ import absolute_import
-from __future__ import division
-
-from __future__ import print_function
-
 import os
+import shutil
 import tensorflow.compat.v1 as tf
 
 
 open = tf.gfile.GFile  # pylint: disable=redefined-builtin
+copy = tf.gfile.Copy
+remove = tf.gfile.Remove
 makedirs = os.makedirs
 exists = os.path.exists
 list_files = os.listdir
+delete_recursively = shutil.rmtree
+
 

@@ -78,17 +78,17 @@ def convex_hull_roc(roc):
   """
   fprs, tprs, thresholds = roc
   if np.isnan(fprs).any() or np.isnan(tprs).any():
-    logging.warning("Convex hull solver does not handle NaNs.")
+    logging.debug("Convex hull solver does not handle NaNs.")
     return roc
   if len(fprs) < 3:
-    logging.warning("Convex hull solver does not curves with < 3 points.")
+    logging.debug("Convex hull solver does not curves with < 3 points.")
     return roc
   try:
     # Add (fpr=1, tpr=0) to the convex hull to remove any points below the
     # random-performance line.
     hull = scipy.spatial.ConvexHull(np.vstack([fprs + [1], tprs + [0]]).T)
   except scipy.spatial.qhull.QhullError:
-    logging.exception("Convex hull solver failed.")
+    logging.debug("Convex hull solver failed.")
     return roc
   verticies = set(hull.vertices)
 

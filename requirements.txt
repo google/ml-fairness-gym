@@ -16,3 +16,4 @@ tensorflow==1.15
 tqdm
 dopamine-rl
 atari-py
+recsim

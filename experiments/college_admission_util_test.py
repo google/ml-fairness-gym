@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Lint as: python2, python3
+# Lint as: python3
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from unittest import mock
 from absl.testing import absltest
 import runner_lib
 from experiments import college_admission_util
 import gin
-import mock
 
 
 class CollegeAdmissionUtilTest(absltest.TestCase):
@@ -68,17 +68,6 @@ class CollegeAdmissionUtilTest(absltest.TestCase):
         college_admission_util.selection_fn_social_burden_eligible_auditor(
             step))
 
-  def test_example_configuration_runs(self):
-    """Test the college admission runner end-to-end.
-
-    This implicitly tests the contents of college_admission_util.py that are
-    referred to in college_admission_config.gin configuration file.
-    """
-    gin.parse_config_file(
-        'third_party/py/fairness_gym/experiments/config/'
-        'college_admission_config.gin')
-    runner = runner_lib.Runner()
-    runner.run()
 
 
 if __name__ == '__main__':
