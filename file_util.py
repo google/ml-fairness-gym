@@ -23,6 +23,7 @@ import tensorflow.compat.v1 as tf
 open = tf.gfile.GFile  # pylint: disable=redefined-builtin
 copy = tf.gfile.Copy
 remove = tf.gfile.Remove
+glob = tf.gfile.Glob
 makedirs = os.makedirs
 exists = os.path.exists
 list_files = os.listdir
