@@ -196,9 +196,6 @@ def load_model(filepath,
                gradient_clip_value=None,
                gradient_clip_norm=None):
   """Loads RNNAgent model from the path."""
-  # Since keras model.load requires a file path and filepath could be a CNS
-  # directory, we will first copy the model into a tempfile and then read it
-  # from there.
   tmp_model_file_path = os.path.join(tempfile.gettempdir(), 'tmp_model.h5')
   file_util.copy(filepath, tmp_model_file_path, overwrite=True)
   loaded_model = tf.keras.models.load_model(tmp_model_file_path)
