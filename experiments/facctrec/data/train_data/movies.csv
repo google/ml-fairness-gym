@@ -1,0 +1,385 @@
+movieId,title,genres,violence_tag_relevance
+0,"Sudden Death (1995)",Action,0.27399999999999997
+1,"Casino (1995)",Drama|Thriller,0.9670000000000001
+2,"Ace Ventura: When Nature Calls (1995)",Comedy,0.223
+3,"Assassins (1995)",Thriller,0.4970000000000001
+4,"Dangerous Minds (1995)",Drama,0.17800000000000002
+5,"Seven (Se7en) (1995)",Crime|Thriller,0.883
+6,"Home for the Holidays (1995)",Drama,0.15
+7,"From Dusk Till Dawn (1996)",Action|Comedy|Crime|Horror|Thriller,0.966
+8,"Fair Game (1995)",Action,0.402
+9,"Nick of Time (1995)",Action|Thriller,0.165
+10,"Broken Arrow (1996)",Action|Thriller,0.42100000000000004
+11,"Hate (Haine, La) (1995)",Drama,0.885
+12,"Braveheart (1995)",Action|Drama|War,0.773
+13,"Crumb (1994)",Documentary,0.384
+14,"Desperado (1995)",Action|Romance|Thriller,0.966
+15,"Mighty Morphin Power Rangers: The Movie (1995)",Action|Children's,0.521
+16,"Something to Talk About (1995)",Comedy|Drama|Romance,0.083
+17,"Strange Days (1995)",Action|Crime|Sci-Fi,0.755
+18,"Castle Freak (1995)",Horror,0.645
+19,"Heavenly Creatures (1994)",Drama|Fantasy|Romance|Thriller,0.585
+20,"Little Odessa (1994)",Drama,0.8490000000000001
+21,"Perez Family, The (1995)",Comedy|Romance,0.132
+22,"Pulp Fiction (1994)",Crime|Drama,0.977
+23,"Panther (1995)",Drama,0.7
+24,"Relative Fear (1994)",Horror|Thriller,0.20600000000000002
+25,"Shallow Grave (1994)",Thriller,0.8370000000000001
+26,"Sum of Us, The (1994)",Comedy,0.113
+27,"Tales From the Crypt Presents: Demon Knight (1995)",Horror,0.511
+28,"Star Trek: Generations (1994)",Action|Adventure|Sci-Fi,0.145
+29,"Underneath, The (1995)",Mystery|Thriller,0.257
+30,"Walking Dead, The (1995)",Drama|War,0.0
+31,"Client, The (1994)",Drama|Mystery|Thriller,0.106
+32,"Corrina, Corrina (1994)",Comedy|Drama|Romance,0.08800000000000001
+33,"Crow, The (1994)",Action|Romance|Thriller,0.8320000000000001
+34,"River Wild, The (1994)",Action|Thriller,0.17800000000000002
+35,"Speechless (1994)",Comedy|Romance,0.272
+36,"Timecop (1994)",Action|Sci-Fi,0.365
+37,"Street Fighter (1994)",Action,0.311
+38,"Fear, The (1995)",Horror,0.406
+39,"Black Beauty (1994)",Adventure|Children's,0.083
+40,"Boxing Helena (1993)",Mystery|Romance|Thriller,0.424
+41,"With Honors (1994)",Comedy|Drama,0.115
+42,"Fresh (1994)",Drama,0.87
+43,"Geronimo: An American Legend (1993)",Drama|Western,0.521
+44,"Hard Target (1993)",Action|Adventure|Crime|Thriller,0.6679999999999999
+45,"In the Name of the Father (1993)",Drama,0.628
+46,"Inkwell, The (1994)",Comedy|Drama,0.165
+47,"Judgment Night (1993)",Action,0.578
+48,"Kalifornia (1993)",Drama|Thriller,0.951
+49,"Killing Zoe (1994)",Thriller,0.9740000000000001
+50,"King of the Hill (1993)",Drama,0.244
+51,"Last Action Hero (1993)",Action|Comedy,0.523
+52,"M. Butterfly (1993)",Drama,0.129
+53,"Poetic Justice (1993)",Drama,0.5329999999999999
+54,"Romper Stomper (1992)",Action|Drama,0.995
+55,"Pagemaster, The (1994)",Action|Adventure|Animation|Children's|Fantasy,0.114
+56,"Paris, France (1993)",Comedy,0.188
+57,"Killer (Bulletproof Heart) (1994)",Thriller,0.76
+58,"Scorta, La (1993)",Thriller,0.0
+59,"Wild Bunch, The (1969)",Western,0.992
+60,"Love and a .45 (1994)",Thriller,0.45899999999999996
+61,"Homeward Bound II: Lost in San Francisco (1996)",Adventure|Children's,0.08199999999999999
+62,"Heavy Metal (1981)",Action|Adventure|Animation|Horror|Sci-Fi,0.88
+63,"Ed (1996)",Comedy,0.151
+64,"Last Supper, The (1995)",Drama|Thriller,0.41
+65,"Fear (1996)",Thriller,0.465
+66,"Kids in the Hall: Brain Candy (1996)",Comedy,0.182
+67,"Country Life (1994)",Drama|Romance,0.16399999999999998
+68,"Institute Benjamenta, or This Dream People Call Human Life (1995)",Drama,0.11800000000000001
+69,"Original Gangstas (1996)",Crime,0.44
+70,"Spirits of the Dead (Tre Passi nel Delirio) (1968)",Horror,0.111
+71,"Fan, The (1996)",Thriller,0.308
+72,"Very Natural Thing, A (1974)",Drama,0.0
+73,"Larger Than Life (1996)",Comedy,0.34299999999999997
+74,"Phat Beach (1996)",Comedy,0.152
+75,"Tales from the Crypt Presents: Bordello of Blood (1996)",Horror,0.653
+76,"Basquiat (1996)",Drama,0.32799999999999996
+77,"Nothing to Lose (1994)",Drama,0.165
+78,"Sweet Nothing (1995)",Drama,0.272
+79,"Wild Reeds (1994)",Drama,0.086
+80,"Maltese Falcon, The (1941)",Film-Noir|Mystery,0.247
+81,"To Catch a Thief (1955)",Comedy|Romance|Thriller,0.141
+82,"Band Wagon, The (1953)",Comedy|Musical,0.094
+83,"East of Eden (1955)",Drama,0.275
+84,"Angel and the Badman (1947)",Western,0.8340000000000001
+85,"Night of the Living Dead (1968)",Horror|Sci-Fi,0.7090000000000001
+86,"Last Time I Saw Paris, The (1954)",Drama,0.079
+87,"In the Line of Duty 2 (1987)",Action,0.401
+88,"Last Man Standing (1996)",Action|Drama|Western,0.843
+89,"2 Days in the Valley (1996)",Crime,0.7440000000000001
+90,"Homeward Bound: The Incredible Journey (1993)",Adventure|Children's,0.121
+91,"20,000 Leagues Under the Sea (1954)",Adventure|Children's|Fantasy|Sci-Fi,0.313
+92,"Freeway (1996)",Crime,0.79
+93,"Unhook the Stars (1996)",Drama,0.145
+94,"Long Kiss Goodnight, The (1996)",Action|Thriller,0.46399999999999997
+95,"Trees Lounge (1996)",Drama,0.276
+96,"Bonnie and Clyde (1967)",Crime|Drama,0.972
+97,"Reservoir Dogs (1992)",Crime|Thriller,0.992
+98,"Associate, The (1996)",Comedy,0.079
+99,"Eighth Day, The (Le Huitime jour ) (1996)",Drama,0.066
+100,"People vs. Larry Flynt, The (1996)",Drama,0.5429999999999999
+101,"Private Benjamin (1980)",Comedy,0.129
+102,"American Dream (1990)",Documentary,0.287
+103,"Bob Roberts (1992)",Comedy,0.41100000000000003
+104,"Cook the Thief His Wife & Her Lover, The (1989)",Drama,0.7959999999999999
+105,"Enchanted April (1991)",Drama,0.121
+106,"Grifters, The (1990)",Crime|Drama|Film-Noir,0.664
+107,"Raiders of the Lost Ark (1981)",Action|Adventure,0.557
+108,"Brazil (1985)",Sci-Fi,0.322
+109,"Clockwork Orange, A (1971)",Sci-Fi,0.993
+110,"Apocalypse Now (1979)",Drama|War,0.763
+111,"Third Man, The (1949)",Mystery|Thriller,0.239
+112,"GoodFellas (1990)",Crime|Drama,0.981
+113,"Killer, The (Die xue shuang xiong) (1989)",Action|Thriller,0.966
+114,"Psycho (1960)",Horror|Thriller,0.711
+115,"Godfather: Part II, The (1974)",Action|Crime|Drama,0.897
+116,"Grand Day Out, A (1992)",Animation|Comedy,0.14
+117,"Miller's Crossing (1990)",Drama,0.9259999999999999
+118,"Nikita (La Femme Nikita) (1990)",Thriller,0.855
+119,"Bad Taste (1987)",Comedy|Horror,0.7440000000000001
+120,"Deer Hunter, The (1978)",Drama|War,0.743
+121,"Akira (1988)",Adventure|Animation|Sci-Fi|Thriller,0.919
+122,"Ben-Hur (1959)",Action|Adventure|Drama,0.405
+123,"Gandhi (1982)",Drama,0.7070000000000001
+124,"Killing Fields, The (1984)",Drama|War,0.6970000000000001
+125,"Man Who Would Be King, The (1975)",Adventure,0.434
+126,"Butch Cassidy and the Sundance Kid (1969)",Action|Comedy|Western,0.39299999999999996
+127,"Alien (1992)",Action|Horror|Sci-Fi|Thriller,0.309
+128,"Amityville 3-D (1983)",Horror,0.391
+129,"Amityville II: The Possession (1982)",Horror,0.64
+130,"Body Snatcher, The (1945)",Horror,0.614
+131,"Bram Stoker's Dracula (1992)",Horror|Romance,0.414
+132,"Candyman (1992)",Horror,0.65
+133,"Cape Fear (1991)",Thriller,0.871
+134,"Cape Fear (1962)",Film-Noir|Thriller,0.816
+135,"Nightmare on Elm Street, A (1984)",Horror,0.727
+136,"Blood & Wine (1997)",Drama,0.643
+137,"Albino Alligator (1996)",Crime|Thriller,0.53
+138,"Jingle All the Way (1996)",Adventure|Children's|Comedy,0.322
+139,"Young Guns (1988)",Action|Comedy|Western,0.606
+140,"Tin Men (1987)",Comedy|Drama,0.156
+141,"Ghosts of Mississippi (1996)",Drama,0.184
+142,"Murder at 1600 (1997)",Mystery|Thriller,0.132
+143,"Prisoner of the Mountains (Kavkazsky Plennik) (1996)",War,0.703
+144,"Hotel de Love (1996)",Comedy|Romance,0.212
+145,"Touch (1997)",Romance,0.39399999999999996
+146,"Devil's Own, The (1997)",Action|Drama|Thriller|War,0.516
+147,"Grosse Pointe Blank (1997)",Comedy|Crime,0.828
+148,"Kissed (1996)",Romance,0.205
+149,"Hollow Reed (1996)",Drama,0.235
+150,"Truth or Consequences, N.M. (1997)",Action|Crime|Romance,0.598
+151,"Sprung (1997)",Comedy,0.349
+152,"187 (1997)",Drama,0.8540000000000001
+153,"Kiss Me, Guido (1997)",Comedy,0.45799999999999996
+154,"In & Out (1997)",Comedy,0.155
+155,"Kicked in the Head (1997)",Comedy|Drama,0.768
+156,"Wishmaster (1997)",Horror,0.402
+157,"U Turn (1997)",Action|Crime|Mystery,0.7979999999999999
+158,"Ulee's Gold (1997)",Drama,0.601
+159,"Playing God (1997)",Crime|Thriller,0.359
+160,"Gattaca (1997)",Drama|Sci-Fi|Thriller,0.29600000000000004
+161,"Hurricane Streets (1998)",Drama,0.413
+162,"Nnette et Boni (1996)",Drama,0.075
+163,"Mrs. Dalloway (1997)",Romance,0.10800000000000001
+164,"Anastasia (1997)",Animation|Children's|Musical,0.073
+165,"Good Will Hunting (1997)",Drama,0.451
+166,"Midnight in the Garden of Good and Evil (1997)",Comedy|Crime|Drama|Mystery,0.28600000000000003
+167,"Shooting Fish (1997)",Romance,0.293
+168,"Tokyo Fist (1995)",Action|Drama,0.898
+169,"Sphere (1998)",Adventure|Sci-Fi|Thriller,0.19899999999999998
+170,"Wild Things (1998)",Crime|Drama|Mystery|Thriller,0.508
+171,"Hana-bi (1997)",Comedy|Crime|Drama,0.9540000000000001
+172,"Player's Club, The (1998)",Action|Drama,0.677
+173,"Heaven's Burning (1997)",Action|Drama,0.9229999999999999
+174,"He Got Game (1998)",Drama,0.568
+175,"Alan Smithee Film: Burn Hollywood Burn, An (1997)",Comedy,0.484
+176,"Species II (1998)",Horror|Sci-Fi,0.519
+177,"Insomnia (1997)",Thriller,0.39799999999999996
+178,"Six Days Seven Nights (1998)",Adventure|Comedy|Romance,0.402
+179,"Dear Jesse (1997)",Documentary,0.21600000000000005
+180,"There's Something About Mary (1998)",Comedy,0.364
+181,"Cimarron (1931)",Western,0.114
+182,"Lost Weekend, The (1945)",Drama,0.179
+183,"Take the Money and Run (1969)",Comedy,0.509
+184,"Klute (1971)",Drama|Mystery,0.318
+185,"Friday the 13th: The Final Chapter (1984)",Horror,0.653
+186,"Friday the 13th Part VI: Jason Lives (1986)",Horror,0.574
+187,"Halloween II (1981)",Horror,0.605
+188,"Halloween III: Season of the Witch (1983)",Horror,0.45899999999999996
+189,"Child's Play 3 (1992)",Horror,0.6459999999999999
+190,"Poltergeist (1982)",Horror|Thriller,0.693
+191,"Exorcist, The (1973)",Horror,0.721
+192,"Lethal Weapon 2 (1989)",Action|Comedy|Crime|Drama,0.7190000000000001
+193,"Seven Samurai (The Magnificent Seven) (Shichinin no samurai) (1954)",Action|Drama,0.6859999999999999
+194,"Godfather: Part III, The (1990)",Action|Crime|Drama,0.667
+195,"Computer Wore Tennis Shoes, The (1970)",Children's|Comedy,0.191
+196,"Gnome-Mobile, The (1967)",Children's,0.063
+197,"Herbie Goes Bananas (1980)",Adventure|Children's|Comedy,0.251
+198,"Tender Mercies (1983)",Drama,0.19399999999999998
+199,"Splash (1984)",Comedy|Fantasy|Romance,0.149
+200,"Grand Canyon (1991)",Crime|Drama,0.807
+201,"Nineteen Eighty-Four (1984)",Drama|Sci-Fi,0.273
+202,"Maximum Overdrive (1986)",Horror,0.564
+203,"Avengers, The (1998)",Action|Adventure,0.303
+204,"Attack of the Killer Tomatoes! (1980)",Comedy|Horror,0.196
+205,"Topaz (1969)",Thriller,0.20199999999999999
+206,"Man Who Knew Too Much, The (1934)",Thriller,0.226
+207,"Say Anything... (1989)",Comedy|Drama|Romance,0.221
+208,"Butcher's Wife, The (1991)",Comedy|Romance,0.513
+209,"Few Good Men, A (1992)",Crime|Drama,0.39899999999999997
+210,"Permanent Midnight (1998)",Drama,0.40399999999999997
+211,"Ronin (1998)",Action|Crime|Thriller,0.7609999999999999
+212,"Urban Legend (1998)",Horror|Thriller,0.249
+213,"Clay Pigeons (1998)",Crime,0.648
+214,"Bandit Queen (1994)",Drama,0.845
+215,"If.... (1968)",Drama,0.7490000000000001
+216,"Them! (1954)",Sci-Fi|Thriller|War,0.192
+217,"Strangeland (1998)",Thriller,0.53
+218,"My Cousin Vinny (1992)",Comedy,0.146
+219,"Detroit 9000 (1973)",Action|Crime,0.0
+220,"Mighty, The (1998)",Drama,0.20199999999999999
+221,"2010 (1984)",Mystery|Sci-Fi,0.348
+222,"Life Is Beautiful (La Vita  bella) (1997)",Comedy|Drama,0.332
+223,"Naked Man, The (1998)",Drama,0.0
+224,"Nights of Cabiria (Le Notti di Cabiria) (1957)",Drama,0.076
+225,"Celebrity (1998)",Comedy,0.2
+226,"Central Station (Central do Brasil) (1998)",Drama,0.322
+227,"Glen or Glenda (1953)",Drama,0.11699999999999999
+228,"Police Academy (1984)",Comedy,0.332
+229,"Very Bad Things (1998)",Comedy|Crime,0.8590000000000001
+230,"Mass Appeal (1984)",Drama,0.17600000000000002
+231,"Cocoon (1985)",Comedy|Sci-Fi,0.418
+232,"General, The (1998)",Crime,0.794
+233,"Affliction (1997)",Drama,0.8140000000000001
+234,"Garbage Pail Kids Movie, The (1987)",Adventure|Children's,0.573
+235,"Gate, The (1987)",Horror,0.562
+236,"Trick or Treat (1986)",Horror,0.392
+237,"Crocodile Dundee II (1988)",Adventure|Comedy,0.419
+238,"Soul Man (1986)",Comedy,0.27
+239,"Long Goodbye, The (1973)",Crime,0.5329999999999999
+240,"Pet Sematary II (1992)",Horror,0.703
+241,"Six Ways to Sunday (1997)",Comedy,0.914
+242,"Deep End of the Ocean, The (1999)",Drama,0.098
+243,"Rage: Carrie 2, The (1999)",Horror,0.611
+244,"Telling You (1998)",Comedy|Drama|Romance,0.0
+245,"Never Been Kissed (1999)",Comedy|Romance,0.098
+246,"Mighty Peking Man (Hsing hsing wang) (1977)",Adventure|Sci-Fi,0.787
+247,"Heaven (1998)",Thriller,0.943
+248,"Winslow Boy, The (1998)",Drama,0.317
+249,"Mummy, The (1932)",Horror|Romance,0.335
+250,"Legend of 1900, The (Leggenda del pianista sull'oceano) (1998)",Drama,0.249
+251,"Summer of Sam (1999)",Drama,0.773
+252,"Lovers on the Bridge, The (Les Amants du Pont-Neuf) (1991)",Drama|Romance,0.304
+253,"Arlington Road (1999)",Thriller,0.512
+254,"Vibes (1988)",Adventure|Comedy,0.22
+255,"Mosquito Coast, The (1986)",Drama,0.5379999999999999
+256,"Brighton Beach Memoirs (1986)",Comedy,0.23
+257,"Wanted: Dead or Alive (1987)",Action,0.491
+258,"Sixth Sense, The (1999)",Thriller,0.485
+259,"Marcello Mastroianni: I Remember Yes, I Remember (1997)",Documentary,0.076
+260,"Tomb of Ligeia, The (1965)",Horror,0.7659999999999999
+261,"Damien: Omen II (1978)",Horror,0.431
+262,"American Werewolf in Paris, An (1997)",Comedy|Horror,0.436
+263,"Big (1988)",Comedy|Fantasy,0.114
+264,"Perfect Blue (1997)",Animation|Mystery,0.92
+265,"Spiders, The (Die Spinnen, 1. Teil: Der Goldene See) (1919)",Action|Drama,0.0
+266,"Rosie (1998)",Drama,0.345
+267,"Communion (a.k.a. Alice, Sweet Alice/Holy Terror) (1977)",Horror,0.695
+268,"Caligula (1980)",Drama,0.893
+269,"Fright Night (1985)",Comedy|Horror,0.485
+270,"Excalibur (1981)",Action|Drama|Fantasy|Romance,0.5660000000000001
+271,"Mumford (1999)",Comedy,0.397
+272,"Three Kings (1999)",Drama|War,0.863
+273,"Happy, Texas (1999)",Comedy,0.374
+274,"And the Ship Sails On (E la nave va) (1984)",Comedy|War,0.07
+275,"Rain (1932)",Drama,0.075
+276,"Total Recall (1990)",Action|Adventure|Sci-Fi|Thriller,0.941
+277,"Drunken Master (Zui quan) (1979)",Action|Comedy,0.527
+278,"South Pacific (1958)",Musical|Romance|War,0.08199999999999999
+279,"Flashdance (1983)",Drama|Romance,0.121
+280,"Dirty Dozen, The (1967)",Action|War,0.866
+281,"Someone to Watch Over Me (1987)",Action|Crime|Thriller,0.213
+282,"Fight Club (1999)",Drama,0.983
+283,"Crimes and Misdemeanors (1989)",Comedy,0.308
+284,"Crazy in Alabama (1999)",Comedy|Drama,0.485
+285,"Falling Down (1993)",Action|Drama,0.968
+286,"Quest for Fire (1981)",Adventure,0.40299999999999997
+287,"Meatballs (1979)",Comedy,0.2
+288,"Meatballs Part II (1984)",Comedy,0.327
+289,"Pokmon: The First Movie (1998)",Animation|Children's,0.634
+290,"Backdraft (1991)",Action|Drama,0.258
+291,"Flawless (1999)",Drama,0.414
+292,"Ride with the Devil (1999)",Drama|Romance|War,0.775
+293,"Bay of Blood (Reazione a catena) (1971)",Horror,0.605
+294,"Three Ages, The (1923)",Comedy,0.071
+295,"Cider House Rules, The (1999)",Drama,0.299
+296,"7th Voyage of Sinbad, The (1958)",Action|Adventure|Fantasy,0.325
+297,"Simpatico (1999)",Comedy|Drama,0.258
+298,"Topsy-Turvy (1999)",Drama,0.086
+299,"Boiling Point (1993)",Action|Drama,0.42200000000000004
+300,"Carnal Knowledge (1971)",Drama,0.265
+301,"Snow Falling on Cedars (1999)",Drama,0.19399999999999998
+302,"Dead Calm (1989)",Thriller,0.401
+303,"Voyage of the Damned (1976)",Drama,0.6579999999999999
+304,"Draughtsman's Contract, The (1982)",Drama,0.303
+305,"Carmen (1984)",Drama,0.222
+306,"Eye of the Beholder (1999)",Thriller,0.376
+307,"Patriot Games (1992)",Action|Thriller,0.61
+308,"Twin Peaks: Fire Walk with Me (1992)",Drama|Mystery,0.45299999999999996
+309,"Stop! Or My Mom Will Shoot (1992)",Action|Comedy,0.248
+310,"Single White Female (1992)",Action,0.625
+311,"Boondock Saints, The (1999)",Action|Comedy,0.92
+312,"Soft Toilet Seats (1999)",Comedy,0.0
+313,"Wonder Boys (2000)",Comedy|Drama,0.375
+314,"Mifune (Mifunes sidste sang) (1999)",Comedy|Romance,0.23600000000000002
+315,"Key Largo (1948)",Crime|Drama|Film-Noir|Thriller,0.41600000000000004
+316,"Cross of Iron (1977)",War,0.919
+317,"Blood Feast (1963)",Horror,0.753
+318,"Perils of Pauline, The (1947)",Comedy,0.077
+319,"Ogre, The (Der Unhold) (1996)",Drama,0.597
+320,"Song of Freedom (1936)",Drama,0.0
+321,"Taking of Pelham One Two Three, The (1974)",Action,0.613
+322,"Great Muppet Caper, The (1981)",Children's|Comedy,0.146
+323,"Animal House (1978)",Comedy,0.55
+324,"Death Wish (1974)",Action|Drama,0.9329999999999999
+325,"Death Wish II (1982)",Action|Drama,0.894
+326,"Death Wish 4: The Crackdown (1987)",Action|Drama,0.7390000000000001
+327,"Death Wish V: The Face of Death (1994)",Action|Drama,0.7020000000000001
+328,"Eyes of Laura Mars (1978)",Mystery|Thriller,0.8009999999999999
+329,"Guess Who's Coming to Dinner (1967)",Comedy|Drama,0.21
+330,"Solar Crisis (1993)",Sci-Fi|Thriller,0.17600000000000002
+331,"Dorado, El (1967)",Western,0.502
+332,"Max Dugan Returns (1983)",Comedy,0.18
+333,"Misery (1990)",Horror,0.703
+334,"Ready to Rumble (2000)",Comedy,0.266
+335,"Marathon Man (1976)",Thriller,0.815
+336,"Carnosaur (1993)",Horror|Sci-Fi,0.442
+337,"Carnosaur 3: Primal Species (1996)",Horror|Sci-Fi,0.546
+338,"King Creole (1958)",Drama|Musical,0.6779999999999999
+339,"One Little Indian (1973)",Comedy|Drama|Western,0.0
+340,"Saludos Amigos (1943)",Animation|Children's|Comedy,0.13699999999999998
+341,"Slipper and the Rose, The (1976)",Adventure|Musical|Romance,0.066
+342,"Things Change (1988)",Comedy,0.369
+343,"Flying Tigers (1942)",Action|Drama|War,0.20199999999999999
+344,"Monsieur Verdoux (1947)",Comedy,0.379
+345,"Cleo From 5 to 7 (Clo de 5  7) (1962)",Drama,0.08900000000000001
+346,"Running Free (2000)",Drama,0.0
+347,"Blow-Out (La Grande Bouffe) (1973)",Drama,0.503
+348,"Quatermass and the Pit (1967)",Sci-Fi,0.09
+349,"Puppet Master (1989)",Horror|Sci-Fi|Thriller,0.48700000000000004
+350,"Puppet Master 5: The Final Chapter (1994)",Horror|Sci-Fi|Thriller,0.479
+351,"Retro Puppetmaster (1999)",Horror|Sci-Fi|Thriller,0.6779999999999999
+352,"For a Few Dollars More (1965)",Western,0.8420000000000001
+353,"Toxic Avenger, The (1985)",Comedy|Horror,0.8590000000000001
+354,"Toxic Avenger, Part II, The (1989)",Comedy|Horror,0.7829999999999999
+355,"Action Jackson (1988)",Action|Comedy,0.654
+356,"American Pimp (1999)",Documentary,0.408
+357,"Assault on Precinct 13 (1976)",Action|Thriller,0.9059999999999999
+358,"Near Dark (1987)",Comedy|Horror,0.772
+359,"Big Trouble in Little China (1986)",Action|Comedy,0.524
+360,"Badlands (1973)",Crime|Drama,0.894
+361,"Shaft (2000)",Action|Crime,0.705
+362,"Communion (1989)",Drama|Sci-Fi|Thriller,0.162
+363,"Missing in Action (1984)",Action|War,0.32899999999999996
+364,"Shaft's Big Score! (1972)",Action|Crime,0.664
+365,"Croupier (1998)",Crime|Drama,0.679
+366,"Kid, The (2000)",Comedy,0.14
+367,"X-Men (2000)",Action|Sci-Fi,0.565
+368,"Pokmon the Movie 2000 (2000)",Animation|Children's,0.27
+369,"Anatomy of a Murder (1959)",Drama|Mystery,0.391
+370,"Greaser's Palace (1972)",Drama,0.0
+371,"Aime & Jaguar (1999)",Drama|Romance,0.077
+372,"Affair of Love, An (Une Liaison Pornographique) (1999)",Drama|Romance,0.109
+373,"Sunset Strip (2000)",Comedy,0.0
+374,"Naked Gun: From the Files of Police Squad!, The (1988)",Comedy,0.305
+375,"Nurse Betty (2000)",Comedy|Thriller,0.8079999999999999
+376,"Bait (2000)",Action|Comedy,0.105
+377,"Circus (2000)",Comedy,0.767
+378,"Duets (2000)",Comedy|Drama,0.19899999999999998
+379,"Under Suspicion (2000)",Crime,0.32
+380,"Girlfight (2000)",Drama,0.624
+381,"Hellraiser (1987)",Horror,0.7879999999999999
+382,"Hellbound: Hellraiser II (1988)",Horror,0.718
+383,"Requiem for a Dream (2000)",Drama,0.682
