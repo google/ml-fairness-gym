@@ -15,5 +15,5 @@ seaborn
 simplejson
 sklearn
 statsmodels
-tensorflow==1.15.2
+tensorflow==2.5.1
 tqdm
