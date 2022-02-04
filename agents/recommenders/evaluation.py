@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 The ML Fairness Gym Authors.
+# Copyright 2022 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -125,9 +125,14 @@ def evaluate_agent(agent, env, alpha, num_users=100, deterministic=False,
 
 
 def plot_trajectories(rewards, health, figure_file_obj):
+  """Create a KDE or scatter plot of health rewards vs health."""
   plt.figure()
-  g = sns.jointplot(x=rewards, y=health, kind='kde')
-  g.plot_joint(plt.scatter, c='grey', s=30, linewidth=1, marker='+')
+  try:
+    g = sns.jointplot(x=rewards, y=health, kind='kde')
+    g.plot_joint(plt.scatter, c='grey', s=30, linewidth=1, marker='+')
+  except np.linalg.LinAlgError:
+    # If the data does not support KDE plotting, just use scatter.
+    g = sns.jointplot(x=rewards, y=health, kind='scatter')
   g.ax_joint.collections[0].set_alpha(0)
   g.set_axis_labels('$Reward$', '$Health$')
   if figure_file_obj:

@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 The ML Fairness Gym Authors.
+# Copyright 2022 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 import core
@@ -60,7 +59,7 @@ class CumulativeLoans(core.Metric):
     history = self._extract_history(env)
     result = []
     for history_item in history:
-      state = history_item.state  # type: lending.State
+      state = history_item.state  # type: lending.State  # pytype: disable=annotation-type-mismatch
       # Take advantage of the one-hot encoding of state.group in order to build
       # a (num_steps) x (num_groups) array with 1s where loans were given.
       # Multiplying by action makes a row of all zeros if the loan was rejected.
@@ -84,7 +83,7 @@ class CumulativeRecall(core.Metric):
     numerator = []
     denominator = []
     for history_item in history:
-      state = history_item.state  # type: lending.State
+      state = history_item.state  # type: lending.State  # pytype: disable=annotation-type-mismatch
       numerator.append(
           np.array(state.group) * history_item.action *
           (1 - state.will_default))

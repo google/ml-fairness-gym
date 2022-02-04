@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 The ML Fairness Gym Authors.
+# Copyright 2022 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 import core
@@ -28,7 +27,7 @@ from typing import Callable, Optional
 
 def num_in_health_state(step, health_state):
   """Returns the number of people in health_state during a step."""
-  state = step.state  # type: infectious_disease.State
+  state = step.state  # type: infectious_disease.State  # pytype: disable=annotation-type-mismatch
   return sum(s == health_state for s in state.health_states)
 
 

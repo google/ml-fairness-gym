@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 The ML Fairness Gym Authors.
+# Copyright 2022 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -77,21 +77,19 @@ def read_movielens_data(url):
   logging.info('Downloaded zip file containing: %s', downloaded_zip.namelist())
   movies_df = pd.read_csv(
       downloaded_zip.open('ml-1m/movies.dat', 'r'),
-      sep=b'::',
+      sep='::',
       names=['movieId', 'title', 'genres'],
       encoding='iso-8859-1')
-  movies_df['genres'] = movies_df['genres'].str.decode('utf-8', 'ignore')
-  movies_df['title'] = movies_df['title'].str.decode('utf-8', 'ignore')
 
   users_df = pd.read_csv(
       downloaded_zip.open('ml-1m/users.dat', 'r'),
-      sep=b'::',
+      sep='::',
       names=['userId', 'sex', 'age', 'occupation', 'zip_code'],
       encoding='iso-8859-1')
 
   ratings_df = pd.read_csv(
       downloaded_zip.open('ml-1m/ratings.dat', 'r'),
-      sep=b'::',
+      sep='::',
       names=['userId', 'movieId', 'rating', 'timestamp'],
       encoding='iso-8859-1')
   return movies_df, users_df, ratings_df

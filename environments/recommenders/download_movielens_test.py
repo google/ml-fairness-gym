@@ -13,20 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Lint as: python3
-"""Helper functions for working with different file systems."""
-import os
-import shutil
-import tensorflow.compat.v1 as tf
+"""Tests for download_movielens."""
+
+from absl import flags
+from absl.testing import absltest
+import pandas as pd
+import six
+
+FLAGS = flags.FLAGS
 
 
-open = tf.gfile.GFile  # pylint: disable=redefined-builtin
-copy = tf.gfile.Copy
-remove = tf.gfile.Remove
-glob = tf.gfile.Glob
-makedirs = os.makedirs
-exists = os.path.exists
-list_files = os.listdir
-delete_recursively = shutil.rmtree
+class DownloadMovielensTest(absltest.TestCase):
+
+  def test_pandas_bytes_behavior(self):
+    """Check that pandas treats BytesIO stream as a string."""
+    f = six.BytesIO(b'movieId::title::genres\n1::Toy Story (1995)::Animation')
+    _ = pd.read_csv(f, sep='::', encoding='iso-8859-1')
 
 
+if __name__ == '__main__':
+  absltest.main()

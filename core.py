@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 The ML Fairness Gym Authors.
+# Copyright 2022 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 import copy
@@ -270,10 +269,16 @@ class FairnessEnv(gym.Env):
 
   def __init__(self,
                params = None,
-               initialize_observation_space = True):
+               initialize_observation_space = True,
+               init_action_space_random_state = True):
     self.history = []  # type: HistoryType
     self.state = None  # type: Optional[State]
     self.reward_fn = None  # type: Optional[RewardFn]
+
+    # Sometimes the action_space property is not ready here, e.g. RecsimWrapper
+    if init_action_space_random_state:
+      # gym.Space.np_random is created lazily, make sure it is created here.
+      _ = self.action_space.np_random
 
     if initialize_observation_space:
       self.observation_space = gym.spaces.Dict(self.observable_state_vars)
@@ -601,5 +606,5 @@ class Agent(object):
   def sample_from(self, space):
     """Sample from a space using the agent's own state."""
     space = copy.deepcopy(space)
-    space.np_random = self.rng
+    space._np_random = self.rng  # pylint: disable=protected-access
     return space.sample()

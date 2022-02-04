@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 The ML Fairness Gym Authors.
+# Copyright 2022 The ML Fairness Gym Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 from typing import Any
@@ -46,8 +45,13 @@ class RecsimWrapper(core.FairnessEnv):
   def __init__(self, params=None):
     """Initializes RecsimWrapper."""
     super(RecsimWrapper, self).__init__(
-        params, initialize_observation_space=False)
+        params,
+        initialize_observation_space=False,
+        init_action_space_random_state=False)
     self.state = State(recsim_env=params.recsim_env)
+
+    # gym.Space.np_random is created lazily, make sure it is created here.
+    _ = self.action_space.np_random
 
   # The use of @property here is intentional. RecsimGym objects have
   # action_space and observation_space as properties because they are updated
