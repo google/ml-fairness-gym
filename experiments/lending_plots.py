@@ -28,6 +28,7 @@ import file_util
 from environments import lending_params
 import matplotlib as mpl
 # pylint: disable=g-import-not-at-top
+# mpl.use('TkAgg')
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np

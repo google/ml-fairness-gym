@@ -40,6 +40,7 @@ class CreditDistribution(core.Metric):
     for component in params.applicant_distribution.components:
       group_id = np.argmax(component.components[0].group_membership.mean)
       result[str(group_id)] = component.weights
+
     return result
 
 
@@ -89,3 +90,104 @@ class CumulativeRecall(core.Metric):
           (1 - state.will_default))
       denominator.append(np.array(state.group) * (1 - state.will_default))
     return (np.cumsum(numerator, 0) / np.cumsum(denominator, 0)).T
+
+class AverageCredicts(core.Metric):
+  """Returns the cumulative number of loans given to each group over time."""
+
+  def measure(self, env):
+    """Returns an array of size (num_groups) x (num_steps).
+
+    Cell (i, j) contains the average credit given at time i to group members of group j.
+
+    Args:
+      env: The environment to be measured.
+    """
+
+    history = self._extract_history(env)
+    result = []
+    for history_item in history:
+      state = history_item.state
+      # Take advantage of the one-hot encoding of state.group in order to build
+      # a (num_steps) x (num_groups) array with values as the credit scores.
+      # Multiplying by action makes a row of all zeros if the loan was rejected.
+      tmp_result = {}
+      for component in state.params.applicant_distribution.components:
+        group_id = np.argmax(component.components[0].group_membership.mean)
+        tmp_result[str(group_id)] = component.weights
+
+      group_weights = np.array([i.weights for i in state.params.applicant_distribution.components])
+      avg_group_weights = list(group_weights.mean(axis=1))
+      result.append(avg_group_weights)
+    return result
+
+class AcceptanceRate(core.Metric):
+  """Returns the acceptance rate given to each group over time."""
+
+  def measure(self, env):
+    """Returns an array of size (num_groups) x (num_steps).
+
+    Cell (i, j) contains the acceptance rate given at time i to group members of group j.
+
+    Args:
+      env: The environment to be measured.
+    """
+
+    history = self._extract_history(env)
+    result = []
+    for history_item in history:
+      state = history_item.state  
+      # Take advantage of the one-hot encoding of state.group in order to build
+      # a (num_steps) x (num_groups) array with values indicate the default rate until the time t.
+      # Multiplying by action makes a row of all zeros if the loan was rejected.
+      if len(result) > 1:
+        result.append(list(np.array(state.group) * history_item.action / len(result)))
+      else:
+        result.append(list(np.array(state.group) * history_item.action))
+    return result
+  
+class DefaultRate(core.Metric):
+  """Returns the default rate given to each group over time."""
+
+  def measure(self, env):
+    """Returns an array of size (num_groups) x (num_steps).
+
+    Cell (i, j) contains the default rate given at time i to group members of group j.
+
+    Args:
+      env: The environment to be measured.
+    """
+
+    history = self._extract_history(env)
+    result = []
+    for history_item in history:
+      state = history_item.state  
+      # Take advantage of the one-hot encoding of state.group in order to build
+      # a (num_steps) x (num_groups) array with values indicate the default rate until the time t.
+      # Multiplying by action makes a row of all zeros if the loan was rejected.
+      if len(result) > 1:
+        result.append(list(np.array(state.group) * abs(history_item.action-1) / len(result)))
+      else:
+        result.append(list(np.array(state.group) * abs(history_item.action-1)))
+    return result
+  
+class Trajectories(core.Metric):
+  """A trajectory segment is a sequence of observations and actions."""
+
+  def measure(self, env):
+    """Returns a sequence of ((observatin), action) pairs. observatin: (group membership, credit score)
+
+    Args:
+      env: The environment to be measured.
+    """
+
+    history = self._extract_history(env)
+    result = []
+    for history_item in history:
+      state = history_item.state
+      applicant_credit_group = np.argmax(state.applicant_features)
+      result.append(((state.group_id, applicant_credit_group), history_item.action))
+      
+    return result
+  
+
+

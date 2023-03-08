@@ -20,6 +20,8 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import json
+import pandas as pd
 from absl import app
 from absl import flags
 from agents import threshold_policies
@@ -29,8 +31,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import simplejson as json
 
-flags.DEFINE_string('outfile', None, 'Path to write out results.')
-flags.DEFINE_string('plots_directory', None, 'Directory to write out plots.')
+flags.DEFINE_string('outfile', "data/sims_results.txt", 'Path to write out results.')
+flags.DEFINE_string('plots_directory', "data/", 'Directory to write out plots.')
 flags.DEFINE_bool('equalize_opportunity', False,
                   'If true, apply equality of opportunity constraints.')
 flags.DEFINE_integer('num_steps', 10000,
@@ -60,6 +62,8 @@ def main(argv):
       burnin=200,
       cluster_shift_increment=0.01,
       include_cumulative_loans=True,
+      include_customized_statistics=True,
+      extract_trajectories=True,
       return_json=False,
       threshold_policy=(EQUALIZE_OPPORTUNITY if FLAGS.equalize_opportunity else
                         MAXIMIZE_REWARD)).run()
@@ -123,11 +127,19 @@ def main(argv):
 
   print('Profit %s %f' % (title, result['metric_results']['profit rate']))
   plt.show()
-
+  
+  
   if FLAGS.outfile:
-    with open(FLAGS.outfile, 'w') as f:
-      f.write(result)
-
+        if '.csv' in FLAGS.outfile:
+           res_df = pd.DataFrame(result)
+           res_df.to_csv(FLAGS.outfile)
+        else:
+          with open(FLAGS.outfile, 'w') as f:
+            f.write(str(result))
+            # json_str = json.dumps(result['metric_results'], skipkeys = True)
+            # json.dump(json_str, f)
+    
+    
 
 if __name__ == '__main__':
   app.run(main)

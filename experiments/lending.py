@@ -69,6 +69,8 @@ class Experiment(core.Params):
   num_steps = attr.ib(default=10000)  # Number of steps in the experiment.
   return_json = attr.ib(default=True)  # Return the results as a json string.
   include_cumulative_loans = attr.ib(default=False)
+  include_customized_statistics = attr.ib(default=False)
+  extract_trajectories = attr.ib(default=False)
 
   def scenario_builder(self):
     """Returns an agent and environment pair."""
@@ -92,7 +94,7 @@ class Experiment(core.Params):
         skip_retraining_fn=lambda action, observation: action == 0,
         cost_matrix=params.CostMatrix(
             fn=0, fp=-1, tp=env_params.interest_rate, tn=0))
-
+    
     agent = oracle_lending_agent.OracleThresholdAgent(
         action_space=env.action_space,
         reward_fn=rewards.BinarizedScalarDeltaReward(
@@ -135,6 +137,14 @@ class Experiment(core.Params):
     if self.include_cumulative_loans:
       metrics['cumulative_loans'] = lending_metrics.CumulativeLoans(env)
       metrics['cumulative_recall'] = lending_metrics.CumulativeRecall(env)
+
+    if self.include_customized_statistics:
+      metrics['acceptance_rate'] = lending_metrics.AcceptanceRate(env)
+      metrics['avg_credit_score_over_time'] = lending_metrics.AverageCredicts(env)
+      metrics['default_rate'] = lending_metrics.DefaultRate(env)
+
+    if self.extract_trajectories:
+      metrics['trajectories'] = lending_metrics.Trajectories(env)
 
     metric_results = run_util.run_simulation(env, agent, metrics,
                                              self.num_steps, self.seed)
